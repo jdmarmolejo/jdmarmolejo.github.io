@@ -57,7 +57,6 @@ author:
 
   # Social media
   artstation       : # Username
-  bluesky          : "randomancer.bsky.social" # Replace this with you Bluesky username
   facebook         : # Username
   flickr           : # Username
   foursquare       : # Username
@@ -67,6 +66,7 @@ author:
   instagram        : # Username
   lastfm           : # Username
   linkedin         : "juan-david-marmolejo-lozano-46ba9326b"
+  bluesky          : "randomancer.bsky.social" # Replace this with you Bluesky username
   mastodon         : # URL
   medium           : # URL
   pinterest        : # Username
