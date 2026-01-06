@@ -1,15 +1,35 @@
 ---
 permalink: /
-title: "Academic Pages is a ready-to-fork GitHub Pages template for academic personal websites"
+title: "About me"
 author_profile: true
 redirect_from: 
   - /about/
   - /about.html
 ---
 
-This is the front page of a website that is powered by the [Academic Pages template](https://github.com/academicpages/academicpages.github.io) and hosted on GitHub pages. [GitHub pages](https://pages.github.com) is a free service in which websites are built and hosted from code and data stored in a GitHub repository, automatically updating when a new commit is made to the repository. This template was forked from the [Minimal Mistakes Jekyll Theme](https://mmistakes.github.io/minimal-mistakes/) created by Michael Rose, and then extended to support the kinds of content that academics have: publications, talks, teaching, a portfolio, blog posts, and a dynamically-generated CV. Incidentally, these same features make it a great template for anyone that needs to show off a professional template!
+Hi, I’m **Juan David Marmolejo Lozano**. I studied **Physics** at the University of Los Andes in Bogotá, Colombia, and completed a **Master’s in Computational Biology** at the same university. I’m currently a **PhD student in Theoretical and Mathematical Biology** at the University of Edinburgh, supervised by [Professor Grima](https://grimagroup.bio.ed.ac.uk/home) and [Dr. Popović](https://webhomes.maths.ed.ac.uk/~npopovic/index.html).
 
- You can fork [this template](https://github.com/academicpages/academicpages.github.io) right now, modify the configuration and Markdown files, add your own PDFs and other content, and have your own site for free, with no ads!
+I explore how **mathematical and computational models** can help us understand, describe, and predict **complex biological systems**, with a focus on **gene expression** and **cellular dynamics**.
+
+---
+
+## Recent Research Projects
+- **Cell Cycle & Gene Expression:** Investigating how the cell cycle influences gene regulation.  
+- **Information Flow in Gene Networks:** Modeling how genetic networks transmit signals.  
+- **Genetic Hysteresis:** Studying memory-like effects in gene regulatory circuits.
+
+---
+
+## Modeling Expertise
+- **Stochastic Models:** Using the **Chemical Master Equation (CME)** and **Linear Noise Approximation**.  
+- **Deterministic Models:** Capturing system dynamics through ordinary differential equations.  
+- **Synthetic Biology:** Designing synthetic biochemical pathways with **mathematical modeling, simulation, and control theory**.
+
+---
+
+I’m passionate about **bridging theory and experiment**, uncovering the principles that govern biological systems, and exploring new challenges at the intersection of **biology, mathematics, and computation**.
+
+<!-- 
 
 A data-driven personal website
 ======
@@ -53,4 +73,4 @@ Example: editing a Markdown file for a talk
 
 For more info
 ------
-More info about configuring Academic Pages can be found in [the guide](https://academicpages.github.io/markdown/), the [growing wiki](https://github.com/academicpages/academicpages.github.io/wiki), and you can always [ask a question on GitHub](https://github.com/academicpages/academicpages.github.io/discussions). The [guides for the Minimal Mistakes theme](https://mmistakes.github.io/minimal-mistakes/docs/configuration/) (which this theme was forked from) might also be helpful.
+More info about configuring Academic Pages can be found in [the guide](https://academicpages.github.io/markdown/), the [growing wiki](https://github.com/academicpages/academicpages.github.io/wiki), and you can always [ask a question on GitHub](https://github.com/academicpages/academicpages.github.io/discussions). The [guides for the Minimal Mistakes theme](https://mmistakes.github.io/minimal-mistakes/docs/configuration/) (which this theme was forked from) might also be helpful.-->
