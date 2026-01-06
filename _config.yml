@@ -26,7 +26,7 @@ author:
   avatar           : "profile.png"
   name             : "Juan David Marmolejo Lozano"
   pronouns         : # example: "she/her"  
-  bio              : "Short biography for the left-hand sidebar"
+  bio              : "Raised on coffee, learning the ways of tea. Physicist, computational biologist & PhD student in Mathematical Biology at The University of Edinburgh."
   location         : "Edinburgh, Scotland"
   employer         : "The University of Edinburgh"
   uri              : # URL
@@ -57,7 +57,7 @@ author:
 
   # Social media
   artstation       : # Username
-  bluesky          : "bsky.app" # Replace this with you Bluesky username
+  bluesky          : "bsky.app/profile/randomancer.bsky.social" # Replace this with you Bluesky username
   facebook         : # Username
   flickr           : # Username
   foursquare       : # Username
