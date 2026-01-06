@@ -22,7 +22,7 @@ I explore how **mathematical and computational models** can help us understand, 
 
 ## Modeling Expertise
 - **Stochastic Models:** Using the **Chemical Master Equation (CME)** and **Linear Noise Approximation**.  
-- **Deterministic Models:** Capturing system dynamics through ordinary differential equations.  
+- **Deterministic Models:** Capturing system dynamics through partial and ordinary differential equations.  
 - **Synthetic Biology:** Designing synthetic biochemical pathways with **mathematical modeling, simulation, and control theory**.
 
 ---
