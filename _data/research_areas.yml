@@ -13,14 +13,14 @@
 # =====================================================================
 
 - id: mathematical-biology
-  title: "Mathematical Biology"
+  title: "Information Theory in Biochemical Systems"
   description: "Mathematical modelling of biological systems."
-  image: /images/area-math-bio.jpg
+  image: /images/cell-info-theory.svg
 
 - id: computational-biology
-  title: "Computational Biology"
+  title: "Effects of cell cycle on gene expression"
   description: "Algorithms and simulations for biological data."
-  image: /images/area-comp-bio.jpg
+  image: /images/cell-division-circuit.svg
 
 - id: stochastic-physics
   title: "Stochastic & Statistical Physics"
