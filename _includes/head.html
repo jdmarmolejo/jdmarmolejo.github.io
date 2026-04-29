@@ -8,9 +8,8 @@
 </script>
 <script>
   (function () {
-    var saved = localStorage.getItem('theme');
-    if (saved === 'light') return;
     document.documentElement.setAttribute('data-theme', 'dark');
+    try { localStorage.removeItem('theme'); } catch (e) {}
   })();
 </script>
 <!-- For all browsers -->
