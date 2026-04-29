@@ -49,4 +49,8 @@ html[data-theme="dark"] {
     --global-text-color                 : #{$text};
     --global-text-color-light           : #f5e9d3;                       /* crema para énfasis */
     --global-thead-color                : #{$background-lighter};
+
+    h1, h2, h3, h4, h5, h6 {
+        color: #ff6b8e;
+    }
 }
