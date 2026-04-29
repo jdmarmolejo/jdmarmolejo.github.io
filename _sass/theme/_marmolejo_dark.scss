@@ -1,0 +1,52 @@
+/* ==========================================================================
+    MARMOLEJO THEME - DARK VERSION
+    Paleta derivada de las ilustraciones de áreas de investigación:
+      fondo navy, acentos coral/magenta + teal/cyan, detalles crema.
+    ========================================================================== */
+/* Color codes used for the theme */
+$primary-color              : #4dd6e0;             /* teal — color de marca principal */
+$gray                       : #7a8a9c;             /* gris con leve tinte navy */
+$dark-gray                  : mix(#000, $gray, 40%);
+$darker-gray                : mix(#000, $gray, 60%);
+$light-gray                 : mix(#fff, $gray, 50%);
+$background                 : #0a1c2f;             /* navy profundo (subido un poco desde #06121f para legibilidad) */
+$background-light           : mix(#fff, $background, 12%);
+$background-lighter         : mix(#fff, $background, 22%);
+$text                       : #e8edf2;             /* off-white para texto del cuerpo */
+$link                       : #7ce9d9;             /* teal claro para links */
+$link-dark                  : #ff8fa8;             /* coral — usado en hover (cross-palette pop, no realmente "dark") */
+$link-light                 : mix(#fff, $link, 25%);
+/* Color codes used for the site */
+$danger-color               : #ff6b8e;             /* coral medio */
+$info-color                 : #4dd6e0;
+$notice-color               : #7a8a9c;
+$success-color              : #5ad6ad;
+$warning-color              : #f5c46b;
+/* Other basic settings for the template */
+$border-radius              : 4px;
+$box-shadow                 : 0 1px 1px rgba(0, 0, 0, 0.25);
+$global-transition          : all 0.2s ease-in-out;
+$masthead-height            : 70px;
+$navicon-width              : 28px;
+$navicon-height             : 4px;
+$sidebar-link-max-width     : 250px;
+$sidebar-screen-min-width   : 1024px;
+/* Dark theme for the site */
+html[data-theme="dark"] {
+    --global-base-color                 : #{$primary-color};
+    --global-bg-color                   : #{$background};
+    --global-footer-bg-color            : #06121f;                       /* footer aún más profundo */
+    --global-border-color               : #{mix(#fff, $background, 12%)};
+    --global-dark-border-color          : #{$background-light};
+    --global-code-background-color      : #f5e9d3;                       /* crema cálida — los bloques de código resaltan */
+    --global-code-text-color            : #{$background};                /* navy profundo sobre crema, alta legibilidad */
+    --global-fig-caption-color          : #{$light-gray};
+    --global-link-color                 : #{$link};
+    --global-link-color-hover           : #{$link-dark};
+    --global-link-color-visited         : #{$link-light};
+    --global-masthead-link-color        : #{$text};
+    --global-masthead-link-color-hover  : #{$primary-color};
+    --global-text-color                 : #{$text};
+    --global-text-color-light           : #f5e9d3;                       /* crema para énfasis */
+    --global-thead-color                : #{$background-lighter};
+}

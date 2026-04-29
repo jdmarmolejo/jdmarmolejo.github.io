@@ -1,0 +1,46 @@
+/* ==========================================================================
+    MARMOLEJO THEME - LIGHT VERSION
+    Versión clara con la misma paleta de marca: navy/teal/coral
+    sobre fondo crema cálido.
+    ========================================================================== */
+/* Color codes used for the theme */
+$primary-color              : #2a9aa3;             /* teal profundo (versión sobria del teal claro del dark) */
+$gray                       : #7a8a9c;
+$dark-gray                  : mix(#000, $gray, 40%);
+$darker-gray                : mix(#000, $gray, 60%);
+$light-gray                 : mix(#fff, $gray, 50%);
+$lighter-gray               : mix(#fff, $gray, 90%);
+/* Color codes used for the site */
+$danger-color               : #ff6b8e;             /* coral medio */
+$info-color                 : #2a9aa3;
+$notice-color               : #7a8a9c;
+$success-color              : #5ad6ad;
+$warning-color              : #f5c46b;
+/* Other basic settings for the template */
+$border-radius              : 4px;
+$box-shadow                 : 0 1px 1px rgba(0, 0, 0, 0.125);
+$global-transition          : all 0.2s ease-in-out;
+$masthead-height            : 70px;
+$navicon-width              : 28px;
+$navicon-height             : 4px;
+$sidebar-link-max-width     : 250px;
+$sidebar-screen-min-width   : 1024px;
+/* Default light theme for the site */
+:root {
+    --global-base-color                 : #{$primary-color};
+    --global-bg-color                   : #faf6ef;             /* crema cálido sutil — no blanco puro */
+    --global-footer-bg-color            : #f0e8d8;             /* crema más saturado en footer */
+    --global-border-color               : #{$lighter-gray};
+    --global-dark-border-color          : #bdc1c4;
+    --global-code-background-color      : #fafafa;
+    --global-code-text-color            : #{$darker-gray};
+    --global-fig-caption-color          : mix(#fff, #{$dark-gray}, 25%);
+    --global-link-color                 : #4dd6e0;             /* teal */
+    --global-link-color-hover           : #ff6b8e;             /* coral pop on hover (mismo cross-palette move) */
+    --global-link-color-visited         : mix(#fff, #2a9aa3, 25%);
+    --global-masthead-link-color        : #0a1c2f;             /* navy profundo, mismo que el bg del dark */
+    --global-masthead-link-color-hover  : #2a9aa3;
+    --global-text-color                 : #0a1c2f;
+    --global-text-color-light           : #{$light-gray};
+    --global-thead-color                : #{$lighter-gray};
+}
