@@ -67,40 +67,42 @@ author_profile: true
     </button>
 
     <h2 id="area-{{ area.id }}-title" class="area-panel__title">{{ area.title }}</h2>
-{% if area.description %}
-  <p class="area-panel__desc">{{ area.description }}</p>
-{% endif %}
+    {% if area.description %}
+      <p class="area-panel__desc">{{ area.description }}</p>
+    {% endif %}
 
-{% assign area_intro = site.research_areas | where: "id", area.id | first %}
-{% if area_intro %}
-  <div class="area-panel__intro">
-    {{ area_intro.content | markdownify }}
-  </div>
-{% endif %}
-
-<hr />
-<h3>Publications</h3>
+    {% assign area_intro = site.research_areas | where: "id", area.id | first %}
+    {% if area_intro %}
+      <div class="area-panel__intro">
+        {{ area_intro.content | markdownify }}
+      </div>
+    {% endif %}
 
     {% assign area_pubs = site.publications | where: "research_area", area.id | sort: "date" | reverse %}
 
+    <hr />
+
     {% if area_pubs.size == 0 %}
       <p><em>No publications in this area yet.</em></p>
-    {% elsif site.publication_category %}
-      {% for category in site.publication_category %}
-        {% assign sub_title_shown = false %}
+    {% else %}
+      <h3>Publications</h3>
+      {% if site.publication_category %}
+        {% for category in site.publication_category %}
+          {% assign sub_title_shown = false %}
+          {% for post in area_pubs %}
+            {% if post.category != category[0] %}{% continue %}{% endif %}
+            {% unless sub_title_shown %}
+              <h4 style="margin-top: 1.5em;">{{ category[1].title }}</h4>
+              {% assign sub_title_shown = true %}
+            {% endunless %}
+            {% include archive-single.html %}
+          {% endfor %}
+        {% endfor %}
+      {% else %}
         {% for post in area_pubs %}
-          {% if post.category != category[0] %}{% continue %}{% endif %}
-          {% unless sub_title_shown %}
-            <h3 style="margin-top: 1.5em;">{{ category[1].title }}</h3>
-            {% assign sub_title_shown = true %}
-          {% endunless %}
           {% include archive-single.html %}
         {% endfor %}
-      {% endfor %}
-    {% else %}
-      {% for post in area_pubs %}
-        {% include archive-single.html %}
-      {% endfor %}
+      {% endif %}
     {% endif %}
   </section>
 {% endfor %}
@@ -230,6 +232,11 @@ author_profile: true
   .area-panel__desc {
     margin: 0 0 0.6em 0;
     opacity: 0.8;
+  }
+
+  .area-panel__intro {
+    margin: 1em 0 0.5em 0;
+    line-height: 1.6;
   }
 
   @keyframes areaFadeIn {
