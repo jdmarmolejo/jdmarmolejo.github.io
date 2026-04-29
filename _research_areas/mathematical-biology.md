@@ -1,5 +1,5 @@
 ---
-id: mathematical-biology
+area: mathematical-biology
 ---
 
 My research in mathematical biology centers on **information flow in gene
