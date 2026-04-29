@@ -67,10 +67,19 @@ author_profile: true
     </button>
 
     <h2 id="area-{{ area.id }}-title" class="area-panel__title">{{ area.title }}</h2>
-    {% if area.description %}
-      <p class="area-panel__desc">{{ area.description }}</p>
-    {% endif %}
-    <hr />
+{% if area.description %}
+  <p class="area-panel__desc">{{ area.description }}</p>
+{% endif %}
+
+{% assign area_intro = site.research_areas | where: "id", area.id | first %}
+{% if area_intro %}
+  <div class="area-panel__intro">
+    {{ area_intro.content | markdownify }}
+  </div>
+{% endif %}
+
+<hr />
+<h3>Publications</h3>
 
     {% assign area_pubs = site.publications | where: "research_area", area.id | sort: "date" | reverse %}
 
