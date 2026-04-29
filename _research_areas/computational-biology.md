@@ -1,6 +1,6 @@
 
 ---
-id: computational-biology
+area: computational-biology
 ---
 
 My research in computational biology centers on **information flow in gene
