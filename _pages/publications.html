@@ -5,32 +5,293 @@ permalink: /publications/
 author_profile: true
 ---
 
-{% if site.author.googlescholar %}
-  <div class="wordwrap">You can also find my articles on <a href="{{site.author.googlescholar}}">my Google Scholar profile</a>.</div>
-{% endif %}
-
 {% include base_path %}
 
-<!-- New style rendering if publication categories are defined -->
-{% if site.publication_category %}
-  {% for category in site.publication_category  %}
-    {% assign title_shown = false %}
-    {% for post in site.publications reversed %}
-      {% if post.category != category[0] %}
-        {% continue %}
-      {% endif %}
-      {% unless title_shown %}
-        <h2>{{ category[1].title }}</h2><hr />
-        {% assign title_shown = true %}
-      {% endunless %}
-      {% include archive-single.html %}
-    {% endfor %}
-  {% endfor %}
-{% else %}
-  {% for post in site.publications reversed %}
-    {% include archive-single.html %}
-  {% endfor %}
+{% if site.author.googlescholar %}
+  <div class="wordwrap" style="margin-bottom: 1.5em;">
+    You can also find my articles on
+    <a href="{{ site.author.googlescholar }}">my Google Scholar profile</a>.
+  </div>
 {% endif %}
 
+<!-- =====================================================================
+     RESEARCH-AREA CARD GRID (default view)
+     ===================================================================== -->
+<div id="research-areas-grid" class="research-areas">
+  <p class="research-areas__intro">
+    My work spans several research directions. Click an area to see the related publications.
+  </p>
 
+  <div class="research-areas__grid">
+    {% for area in site.data.research_areas %}
+      {%- assign area_pubs_count = 0 -%}
+      {%- for pub in site.publications -%}
+        {%- if pub.research_area == area.id -%}
+          {%- assign area_pubs_count = area_pubs_count | plus: 1 -%}
+        {%- endif -%}
+      {%- endfor -%}
 
+      <button type="button"
+              class="research-card"
+              data-area="{{ area.id }}"
+              aria-label="Show publications in {{ area.title }}">
+        <div class="research-card__image">
+          <img src="{{ area.image | prepend: base_path }}"
+               alt="{{ area.title }}"
+               loading="lazy">
+        </div>
+        <div class="research-card__body">
+          <h2 class="research-card__title">{{ area.title }}</h2>
+          {% if area.description %}
+            <p class="research-card__desc">{{ area.description }}</p>
+          {% endif %}
+          <span class="research-card__count">
+            {{ area_pubs_count }} publication{% if area_pubs_count != 1 %}s{% endif %}
+          </span>
+        </div>
+      </button>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- =====================================================================
+     PER-AREA PUBLICATION PANELS (hidden by default)
+     ===================================================================== -->
+{% for area in site.data.research_areas %}
+  <section class="area-panel"
+           id="area-{{ area.id }}"
+           hidden
+           aria-labelledby="area-{{ area.id }}-title">
+    <button type="button" class="area-panel__back" data-action="back">
+      &larr; Back to research areas
+    </button>
+
+    <h2 id="area-{{ area.id }}-title" class="area-panel__title">{{ area.title }}</h2>
+    {% if area.description %}
+      <p class="area-panel__desc">{{ area.description }}</p>
+    {% endif %}
+    <hr />
+
+    {% assign area_pubs = site.publications | where: "research_area", area.id | sort: "date" | reverse %}
+
+    {% if area_pubs.size == 0 %}
+      <p><em>No publications in this area yet.</em></p>
+    {% elsif site.publication_category %}
+      {% comment %}
+        Inside each area, keep the Books / Journal Articles / Conference Papers grouping.
+      {% endcomment %}
+      {% for category in site.publication_category %}
+        {% assign sub_title_shown = false %}
+        {% for post in area_pubs %}
+          {% if post.category != category[0] %}{% continue %}{% endif %}
+          {% unless sub_title_shown %}
+            <h3 style="margin-top: 1.5em;">{{ category[1].title }}</h3>
+            {% assign sub_title_shown = true %}
+          {% endunless %}
+          {% include archive-single.html %}
+        {% endfor %}
+      {% endfor %}
+    {% else %}
+      {% for post in area_pubs %}
+        {% include archive-single.html %}
+      {% endfor %}
+    {% endif %}
+  </section>
+{% endfor %}
+
+<!-- =====================================================================
+     STYLES
+     ===================================================================== -->
+<style>
+  .research-areas__intro {
+    margin: 0 0 1.5em 0;
+    font-size: 1.05em;
+    opacity: 0.85;
+  }
+
+  .research-areas__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 1.5em;
+    margin-bottom: 2em;
+  }
+
+  .research-card {
+    /* reset button styles */
+    background: transparent;
+    border: 1px solid rgba(128, 128, 128, 0.25);
+    padding: 0;
+    margin: 0;
+    font: inherit;
+    color: inherit;
+    text-align: left;
+    cursor: pointer;
+
+    /* card layout */
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border-radius: 10px;
+    transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+  }
+
+  .research-card:hover,
+  .research-card:focus-visible {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.12);
+    border-color: rgba(128, 128, 128, 0.5);
+    outline: none;
+  }
+
+  .research-card__image {
+    width: 100%;
+    aspect-ratio: 16 / 10;
+    background: rgba(128, 128, 128, 0.08);
+    overflow: hidden;
+  }
+
+  .research-card__image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.35s ease;
+  }
+
+  .research-card:hover .research-card__image img {
+    transform: scale(1.04);
+  }
+
+  .research-card__body {
+    padding: 1em 1.1em 1.2em 1.1em;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35em;
+    flex-grow: 1;
+  }
+
+  .research-card__title {
+    margin: 0;
+    font-size: 1.15em;
+    line-height: 1.3;
+  }
+
+  .research-card__desc {
+    margin: 0;
+    font-size: 0.92em;
+    opacity: 0.8;
+    line-height: 1.45;
+  }
+
+  .research-card__count {
+    margin-top: auto;
+    padding-top: 0.5em;
+    font-size: 0.82em;
+    opacity: 0.65;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  /* ---- per-area panel ---- */
+  .area-panel {
+    animation: areaFadeIn 0.25s ease;
+  }
+
+  .area-panel__back {
+    background: transparent;
+    border: 1px solid rgba(128, 128, 128, 0.35);
+    padding: 0.4em 0.9em;
+    margin-bottom: 1.2em;
+    border-radius: 6px;
+    cursor: pointer;
+    font: inherit;
+    color: inherit;
+    transition: background-color 0.15s ease, border-color 0.15s ease;
+  }
+
+  .area-panel__back:hover,
+  .area-panel__back:focus-visible {
+    background-color: rgba(128, 128, 128, 0.1);
+    border-color: rgba(128, 128, 128, 0.55);
+    outline: none;
+  }
+
+  .area-panel__title {
+    margin: 0 0 0.2em 0;
+  }
+
+  .area-panel__desc {
+    margin: 0 0 0.6em 0;
+    opacity: 0.8;
+  }
+
+  @keyframes areaFadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* small screens: keep cards readable */
+  @media (max-width: 480px) {
+    .research-areas__grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+
+<!-- =====================================================================
+     INTERACTIVITY
+     ===================================================================== -->
+<script>
+  (function () {
+    var grid    = document.getElementById('research-areas-grid');
+    var panels  = document.querySelectorAll('.area-panel');
+    var cards   = document.querySelectorAll('.research-card');
+
+    function showArea(id, updateHash) {
+      var found = false;
+      panels.forEach(function (p) {
+        if (p.id === 'area-' + id) {
+          p.hidden = false;
+          found = true;
+        } else {
+          p.hidden = true;
+        }
+      });
+      if (!found) { showGrid(true); return; }
+      grid.hidden = true;
+      if (updateHash) {
+        history.pushState({ area: id }, '', '#' + id);
+      }
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function showGrid(updateHash) {
+      panels.forEach(function (p) { p.hidden = true; });
+      grid.hidden = false;
+      if (updateHash) {
+        history.pushState({ area: null }, '',
+          window.location.pathname + window.location.search);
+      }
+    }
+
+    cards.forEach(function (card) {
+      card.addEventListener('click', function () {
+        showArea(card.dataset.area, true);
+      });
+    });
+
+    document.querySelectorAll('[data-action="back"]').forEach(function (btn) {
+      btn.addEventListener('click', function () { showGrid(true); });
+    });
+
+    // browser back/forward
+    window.addEventListener('popstate', function () {
+      var hash = window.location.hash.replace('#', '');
+      if (hash) { showArea(hash, false); } else { showGrid(false); }
+    });
+
+    // initial state from URL
+    var initialHash = window.location.hash.replace('#', '');
+    if (initialHash) { showArea(initialHash, false); }
+  })();
+</script>
