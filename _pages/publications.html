@@ -55,12 +55,11 @@ author_profile: true
 </div>
 
 <!-- =====================================================================
-     PER-AREA PUBLICATION PANELS (hidden by default)
+     PER-AREA PUBLICATION PANELS (hidden by default via .is-hidden)
      ===================================================================== -->
 {% for area in site.data.research_areas %}
-  <section class="area-panel"
+  <section class="area-panel is-hidden"
            id="area-{{ area.id }}"
-           hidden
            aria-labelledby="area-{{ area.id }}-title">
     <button type="button" class="area-panel__back" data-action="back">
       &larr; Back to research areas
@@ -77,9 +76,6 @@ author_profile: true
     {% if area_pubs.size == 0 %}
       <p><em>No publications in this area yet.</em></p>
     {% elsif site.publication_category %}
-      {% comment %}
-        Inside each area, keep the Books / Journal Articles / Conference Papers grouping.
-      {% endcomment %}
       {% for category in site.publication_category %}
         {% assign sub_title_shown = false %}
         {% for post in area_pubs %}
@@ -103,6 +99,11 @@ author_profile: true
      STYLES
      ===================================================================== -->
 <style>
+  /* Bulletproof hide rule. Necessary because academicpages' base CSS has
+     `section { display: block; }` which overrides the [hidden] HTML
+     attribute (since CSS beats user-agent defaults). */
+  .is-hidden { display: none !important; }
+
   .research-areas__intro {
     margin: 0 0 1.5em 0;
     font-size: 1.05em;
@@ -117,7 +118,6 @@ author_profile: true
   }
 
   .research-card {
-    /* reset button styles */
     background: transparent;
     border: 1px solid rgba(128, 128, 128, 0.25);
     padding: 0;
@@ -126,8 +126,6 @@ author_profile: true
     color: inherit;
     text-align: left;
     cursor: pointer;
-
-    /* card layout */
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -192,7 +190,6 @@ author_profile: true
     letter-spacing: 0.04em;
   }
 
-  /* ---- per-area panel ---- */
   .area-panel {
     animation: areaFadeIn 0.25s ease;
   }
@@ -230,7 +227,6 @@ author_profile: true
     to   { opacity: 1; transform: translateY(0); }
   }
 
-  /* small screens: keep cards readable */
   @media (max-width: 480px) {
     .research-areas__grid {
       grid-template-columns: 1fr;
@@ -251,14 +247,14 @@ author_profile: true
       var found = false;
       panels.forEach(function (p) {
         if (p.id === 'area-' + id) {
-          p.hidden = false;
+          p.classList.remove('is-hidden');
           found = true;
         } else {
-          p.hidden = true;
+          p.classList.add('is-hidden');
         }
       });
       if (!found) { showGrid(true); return; }
-      grid.hidden = true;
+      grid.classList.add('is-hidden');
       if (updateHash) {
         history.pushState({ area: id }, '', '#' + id);
       }
@@ -266,8 +262,8 @@ author_profile: true
     }
 
     function showGrid(updateHash) {
-      panels.forEach(function (p) { p.hidden = true; });
-      grid.hidden = false;
+      panels.forEach(function (p) { p.classList.add('is-hidden'); });
+      grid.classList.remove('is-hidden');
       if (updateHash) {
         history.pushState({ area: null }, '',
           window.location.pathname + window.location.search);
@@ -284,13 +280,11 @@ author_profile: true
       btn.addEventListener('click', function () { showGrid(true); });
     });
 
-    // browser back/forward
     window.addEventListener('popstate', function () {
       var hash = window.location.hash.replace('#', '');
       if (hash) { showArea(hash, false); } else { showGrid(false); }
     });
 
-    // initial state from URL
     var initialHash = window.location.hash.replace('#', '');
     if (initialHash) { showArea(initialHash, false); }
   })();
