@@ -1,0 +1,28 @@
+# =====================================================================
+# Research areas
+# ---------------------------------------------------------------------
+# Each entry below becomes a clickable card on the Publications page.
+# The `id` must match the `research_area:` value used in the frontmatter
+# of each publication file inside _publications/.
+#
+# Fields:
+#   id          (required) short, unique identifier (lowercase, no spaces)
+#   title       (required) name shown on the card
+#   description (optional) short subtitle shown on the card
+#   image       (required) path to an image inside /images/
+# =====================================================================
+
+- id: mathematical-biology
+  title: "Mathematical Biology"
+  description: "Mathematical modelling of biological systems."
+  image: /images/area-math-bio.jpg
+
+- id: computational-biology
+  title: "Computational Biology"
+  description: "Algorithms and simulations for biological data."
+  image: /images/area-comp-bio.jpg
+
+- id: stochastic-physics
+  title: "Stochastic & Statistical Physics"
+  description: "Random processes in physical and biological systems."
+  image: /images/area-stoch-physics.jpg
