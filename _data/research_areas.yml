@@ -22,7 +22,7 @@
   description: "Algorithms and simulations for biological data."
   image: /images/cell-division-circuit.svg
 
-- id: stochastic-physics
-  title: "Stochastic & Statistical Physics"
-  description: "Random processes in physical and biological systems."
-  image: /images/area-stoch-physics.jpg
+#- id: stochastic-physics
+ # title: "Stochastic & Statistical Physics"
+  #description: "Random processes in physical and biological systems."
+  #image: /images/area-stoch-physics.jpg
