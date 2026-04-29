@@ -1,0 +1,200 @@
+<svg viewBox="0 0 800 500" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <radialGradient id="bgGrad" cx="50%" cy="50%" r="80%">
+      <stop offset="0%" stop-color="#112c47"/>
+      <stop offset="100%" stop-color="#06121f"/>
+    </radialGradient>
+
+    <radialGradient id="cellFill" cx="50%" cy="50%" r="55%">
+      <stop offset="0%" stop-color="#ffb0c4" stop-opacity="0.32"/>
+      <stop offset="60%" stop-color="#ff6b8e" stop-opacity="0.16"/>
+      <stop offset="100%" stop-color="#7a2440" stop-opacity="0.04"/>
+    </radialGradient>
+
+    <pattern id="bgDots" width="22" height="22" patternUnits="userSpaceOnUse">
+      <circle cx="11" cy="11" r="0.6" fill="#ffffff" opacity="0.06"/>
+    </pattern>
+
+    <pattern id="circuitGrid" width="20" height="20" patternUnits="userSpaceOnUse">
+      <path d="M 0 10 L 20 10 M 10 0 L 10 20" stroke="#4dd6e0" stroke-width="0.3" opacity="0.13"/>
+    </pattern>
+
+    <filter id="softGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="1.4" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <!-- Peanut/dumbbell shape: continuous closed curve with waist at center.
+         Top half goes left-to-right with slight dip at x=400 (waist top y=220).
+         Bottom half goes right-to-left with slight bump up at x=400 (waist bottom y=280). -->
+    <clipPath id="cellShape">
+      <path d="M 130 250
+               C 130 140, 230 115, 270 135
+               C 320 158, 360 205, 400 220
+               C 440 205, 480 158, 530 135
+               C 570 115, 670 140, 670 250
+               C 670 360, 570 385, 530 365
+               C 480 342, 440 295, 400 280
+               C 360 295, 320 342, 270 365
+               C 230 385, 130 360, 130 250 Z"/>
+    </clipPath>
+  </defs>
+
+  <!-- Background -->
+  <rect width="800" height="500" fill="url(#bgGrad)"/>
+  <rect width="800" height="500" fill="url(#bgDots)"/>
+
+  <!-- =========== CELL INTERIOR =========== -->
+  <g clip-path="url(#cellShape)">
+    <rect width="800" height="500" fill="url(#cellFill)"/>
+    <rect width="800" height="500" fill="url(#circuitGrid)"/>
+
+    <!-- ============ MITOTIC SPINDLE AS PCB TRACES ============ -->
+    <!-- Centrosomes at left (180,250) and right (620,250) -->
+    <g stroke="#4dd6e0" stroke-width="1.3" fill="none" opacity="0.9">
+      <!-- Left fan -->
+      <path d="M 195 250 L 235 250 L 240 220 L 295 220"/>
+      <path d="M 195 250 L 245 250 L 305 250"/>
+      <path d="M 195 250 L 235 250 L 240 280 L 295 280"/>
+      <path d="M 195 250 L 220 250 L 225 195 L 280 195"/>
+      <path d="M 195 250 L 220 250 L 225 305 L 280 305"/>
+      <!-- Right fan -->
+      <path d="M 605 250 L 565 250 L 560 220 L 505 220"/>
+      <path d="M 605 250 L 555 250 L 495 250"/>
+      <path d="M 605 250 L 565 250 L 560 280 L 505 280"/>
+      <path d="M 605 250 L 580 250 L 575 195 L 520 195"/>
+      <path d="M 605 250 L 580 250 L 575 305 L 520 305"/>
+    </g>
+
+    <!-- Trace pads at junctions -->
+    <g fill="#7ce9d9">
+      <circle cx="235" cy="250" r="2"/>
+      <circle cx="565" cy="250" r="2"/>
+      <circle cx="240" cy="220" r="1.7"/>
+      <circle cx="240" cy="280" r="1.7"/>
+      <circle cx="560" cy="220" r="1.7"/>
+      <circle cx="560" cy="280" r="1.7"/>
+      <circle cx="225" cy="195" r="1.5"/>
+      <circle cx="575" cy="195" r="1.5"/>
+      <circle cx="225" cy="305" r="1.5"/>
+      <circle cx="575" cy="305" r="1.5"/>
+    </g>
+
+    <!-- ============ CHROMOSOMES (X-shapes drifting toward each pole) ============ -->
+    <g transform="translate(290, 195)">
+      <path d="M -10 -14 Q -3 -2 -10 14 M 10 -14 Q 3 -2 10 14" stroke="#ff5e7e" stroke-width="3.4" fill="none" stroke-linecap="round"/>
+      <circle cx="0" cy="0" r="3" fill="#7ce9d9" stroke="#4dd6e0" stroke-width="0.8"/>
+    </g>
+    <g transform="translate(305, 250)">
+      <path d="M -10 -14 Q -3 -2 -10 14 M 10 -14 Q 3 -2 10 14" stroke="#ff5e7e" stroke-width="3.4" fill="none" stroke-linecap="round"/>
+      <circle cx="0" cy="0" r="3" fill="#7ce9d9" stroke="#4dd6e0" stroke-width="0.8"/>
+    </g>
+    <g transform="translate(290, 305)">
+      <path d="M -10 -14 Q -3 -2 -10 14 M 10 -14 Q 3 -2 10 14" stroke="#ff5e7e" stroke-width="3.4" fill="none" stroke-linecap="round"/>
+      <circle cx="0" cy="0" r="3" fill="#7ce9d9" stroke="#4dd6e0" stroke-width="0.8"/>
+    </g>
+    <g transform="translate(510, 195)">
+      <path d="M -10 -14 Q -3 -2 -10 14 M 10 -14 Q 3 -2 10 14" stroke="#ff5e7e" stroke-width="3.4" fill="none" stroke-linecap="round"/>
+      <circle cx="0" cy="0" r="3" fill="#7ce9d9" stroke="#4dd6e0" stroke-width="0.8"/>
+    </g>
+    <g transform="translate(495, 250)">
+      <path d="M -10 -14 Q -3 -2 -10 14 M 10 -14 Q 3 -2 10 14" stroke="#ff5e7e" stroke-width="3.4" fill="none" stroke-linecap="round"/>
+      <circle cx="0" cy="0" r="3" fill="#7ce9d9" stroke="#4dd6e0" stroke-width="0.8"/>
+    </g>
+    <g transform="translate(510, 305)">
+      <path d="M -10 -14 Q -3 -2 -10 14 M 10 -14 Q 3 -2 10 14" stroke="#ff5e7e" stroke-width="3.4" fill="none" stroke-linecap="round"/>
+      <circle cx="0" cy="0" r="3" fill="#7ce9d9" stroke="#4dd6e0" stroke-width="0.8"/>
+    </g>
+
+    <!-- ============ CENTROSOMES AS IC CHIPS AT POLES ============ -->
+    <g transform="translate(180, 250)" filter="url(#softGlow)">
+      <rect x="-22" y="-22" width="44" height="44" fill="#0a1a2c" stroke="#4dd6e0" stroke-width="1.8"/>
+      <g stroke="#4dd6e0" stroke-width="1.1">
+        <line x1="-15" y1="-22" x2="-15" y2="-29"/>
+        <line x1="-7" y1="-22" x2="-7" y2="-29"/>
+        <line x1="1" y1="-22" x2="1" y2="-29"/>
+        <line x1="9" y1="-22" x2="9" y2="-29"/>
+        <line x1="15" y1="22" x2="15" y2="29"/>
+        <line x1="-15" y1="22" x2="-15" y2="29"/>
+        <line x1="-7" y1="22" x2="-7" y2="29"/>
+        <line x1="1" y1="22" x2="1" y2="29"/>
+        <line x1="9" y1="22" x2="9" y2="29"/>
+        <line x1="-22" y1="-15" x2="-29" y2="-15"/>
+        <line x1="-22" y1="-7" x2="-29" y2="-7"/>
+        <line x1="-22" y1="1" x2="-29" y2="1"/>
+        <line x1="-22" y1="9" x2="-29" y2="9"/>
+        <line x1="-22" y1="15" x2="-29" y2="15"/>
+      </g>
+      <circle cx="-15" cy="-15" r="1.8" fill="none" stroke="#7ce9d9" stroke-width="0.8"/>
+    </g>
+
+    <g transform="translate(620, 250)" filter="url(#softGlow)">
+      <rect x="-22" y="-22" width="44" height="44" fill="#0a1a2c" stroke="#4dd6e0" stroke-width="1.8"/>
+      <g stroke="#4dd6e0" stroke-width="1.1">
+        <line x1="-15" y1="-22" x2="-15" y2="-29"/>
+        <line x1="-7" y1="-22" x2="-7" y2="-29"/>
+        <line x1="1" y1="-22" x2="1" y2="-29"/>
+        <line x1="9" y1="-22" x2="9" y2="-29"/>
+        <line x1="-15" y1="22" x2="-15" y2="29"/>
+        <line x1="-7" y1="22" x2="-7" y2="29"/>
+        <line x1="1" y1="22" x2="1" y2="29"/>
+        <line x1="9" y1="22" x2="9" y2="29"/>
+        <line x1="22" y1="-15" x2="29" y2="-15"/>
+        <line x1="22" y1="-7" x2="29" y2="-7"/>
+        <line x1="22" y1="1" x2="29" y2="1"/>
+        <line x1="22" y1="9" x2="29" y2="9"/>
+        <line x1="22" y1="15" x2="29" y2="15"/>
+      </g>
+      <circle cx="-15" cy="-15" r="1.8" fill="none" stroke="#7ce9d9" stroke-width="0.8"/>
+    </g>
+
+    <!-- Background circuit decoration (subtle, in lobes) -->
+    <g opacity="0.55">
+      <rect x="155" y="160" width="10" height="5" fill="#4dd6e0"/>
+      <rect x="155" y="335" width="10" height="5" fill="#4dd6e0"/>
+      <rect x="635" y="160" width="10" height="5" fill="#4dd6e0"/>
+      <rect x="635" y="335" width="10" height="5" fill="#4dd6e0"/>
+      <rect x="265" y="155" width="10" height="5" fill="#4dd6e0"/>
+      <rect x="525" y="155" width="10" height="5" fill="#4dd6e0"/>
+      <rect x="265" y="345" width="10" height="5" fill="#4dd6e0"/>
+      <rect x="525" y="345" width="10" height="5" fill="#4dd6e0"/>
+    </g>
+    <g stroke="#4dd6e0" stroke-width="0.6" opacity="0.45" fill="none">
+      <path d="M 160 165 L 180 165 L 180 200"/>
+      <path d="M 640 165 L 620 165 L 620 200"/>
+      <path d="M 160 340 L 180 340 L 180 305"/>
+      <path d="M 640 340 L 620 340 L 620 305"/>
+      <path d="M 270 160 L 270 178"/>
+      <path d="M 530 160 L 530 178"/>
+    </g>
+  </g>
+
+  <!-- =========== CELL MEMBRANE (drawn on top as outline) =========== -->
+  <path d="M 130 250
+           C 130 140, 230 115, 270 135
+           C 320 158, 360 205, 400 220
+           C 440 205, 480 158, 530 135
+           C 570 115, 670 140, 670 250
+           C 670 360, 570 385, 530 365
+           C 480 342, 440 295, 400 280
+           C 360 295, 320 342, 270 365
+           C 230 385, 130 360, 130 250 Z"
+        fill="none" stroke="#ff8fa8" stroke-width="2.2"/>
+  <!-- Inner ghost membrane -->
+  <path d="M 137 250
+           C 137 147, 232 122, 271 142
+           C 320 165, 360 211, 400 226
+           C 440 211, 480 165, 529 142
+           C 568 122, 663 147, 663 250
+           C 663 353, 568 378, 529 358
+           C 480 335, 440 289, 400 274
+           C 360 289, 320 335, 271 358
+           C 232 378, 137 353, 137 250 Z"
+        fill="none" stroke="#ff6b8e" stroke-width="0.8" opacity="0.55"/>
+
+  <!-- Caption -->
+  <text x="400" y="478" font-family="'Courier New', monospace" font-size="11" fill="#7ce9d9" opacity="0.55" text-anchor="middle" letter-spacing="2">A N A P H A S E</text>
+</svg>
