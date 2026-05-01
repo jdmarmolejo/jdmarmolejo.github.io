@@ -2,18 +2,8 @@
 area: computational-biology
 ---
 
-My research in computational biology centers on **information flow in gene
-regulatory networks**. I use the Chemical Master Equation and the Linear
-Noise Approximation to characterize how cells transmit, store, and process
-information about their environment despite the inherent stochasticity of
-gene expression.
+Gene expression is not static; it is tightly coupled to other molecular processes within the cell. In particular, cellular growth can modulate mRNA and protein concentrations by altering the abundances of RNA polymerase, ribosomes, and other resources. Most computational and mathematical studies have treated cell‑cycle effects explicitly, yet they often omit noise sources associated with growth rate, energy availability, and resource limitations. Although there has been progress at the deterministic level, single‑cell stochastic descriptions that incorporate these factors remain scarce, and are largely restricted to housekeeping genes or to effects tied to volume changes and intergenerational inheritance of proteins or
+transcripts.
 
-## Open questions
 
-- How much information can a single gene encode about a time-varying signal?
-- What architectural features of regulatory networks maximize information
-  throughput per molecule?
-- ...
 
-I work closely with experimentalists in the [Grima group](...) to test
-predictions against single-cell data.
