@@ -12,12 +12,12 @@
 #   image       (required) path to an image inside /images/
 # =====================================================================
 
-- id: mathematical-biology
+- id: information-theory
   title: "Information Theory in Biochemical Systems"
   description: "Mathematical modelling of biological systems."
   image: /images/cell-info-theory.svg
 
-- id: computational-biology
+- id: cell-growth
   title: "Effects of cell cycle on gene expression"
   description: "Algorithms and simulations for biological data."
   image: /images/cell-division-circuit.svg
