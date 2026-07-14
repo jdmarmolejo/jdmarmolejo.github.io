@@ -1,28 +1,42 @@
 # =====================================================================
-# Research areas
+# Research areas (single source of truth)
 # ---------------------------------------------------------------------
-# Each entry below becomes a clickable card on the Publications page.
-# The `id` must match the `research_area:` value used in the frontmatter
-# of each publication file inside _publications/.
+# Used by BOTH the homepage "What I work on" section (_layouts/home.html)
+# and the /research/ page (_pages/publications.html).
+#
+# Two levels:
+#   * A top-level entry with `children:` is a GROUP. It is not a
+#     publication area itself; clicking it reveals its child areas.
+#   * A leaf entry (no children) is a real research AREA. Its `id` must
+#     match the `research_area:` value in the relevant _publications/*.md
+#     files, and it may have an intro in _research_areas/<id>.md.
 #
 # Fields:
-#   id          (required) short, unique identifier (lowercase, no spaces)
-#   title       (required) name shown on the card
-#   description (optional) short subtitle shown on the card
-#   image       (required) path to an image inside /images/
+#   id           (required) unique id / anchor. For leaves it also links
+#                publications (research_area) and the intro file.
+#   title        (required) name shown on the card
+#   description  (optional) short subtitle on the card
+#   image        (required) path to an image inside /images/
+#   long_description (group only) intro shown above the child cards
+#   children     (group only) list of leaf areas
 # =====================================================================
 
 - id: information-theory
   title: "Information Theory in Biochemical Systems"
-  description: "Mathematical modelling of biological systems."
+  description: "How gene networks transmit, store and process information despite molecular noise."
   image: /images/cell-info-theory.svg
 
-- id: cell-growth
-  title: "Effects of cell cycle on gene expression"
-  description: "Algorithms and simulations for biological data."
-  image: /images/cell-division-circuit.svg
-
-#- id: stochastic-physics
- # title: "Stochastic & Statistical Physics"
-  #description: "Random processes in physical and biological systems."
-  #image: /images/area-stoch-physics.jpg
+- id: mathematical-cellular-biology
+  title: "Mathematical Cellular Biology"
+  description: "Treating the single cell as a self-replicating system that grows, divides and regulates itself."
+  image: /images/cellmathbiology.svg
+  long_description: "Coarse-grained and stochastic models linking growth, division and gene expression across the cell cycle."
+  children:
+    - id: cell-growth
+      title: "Effects of cell cycle on gene expression"
+      description: "How growth and division shape mRNA and protein fluctuations in single cells."
+      image: /images/cell-division-circuit.svg
+    - id: cell-size-control
+      title: "Understanding Cell Size Control"
+      description: "What sets a cell's size, and how adder/sizer division strategies emerge."
+      image: /images/cellsizecontrol.svg
