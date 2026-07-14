@@ -83,35 +83,81 @@ layout: default
     </div>
   </section>
 
-  <!-- ======================= RESEARCH AREAS ======================= -->
-  {% if site.data.research_areas %}
-  <section class="home-section research">
+  <!-- ======================= RESEARCH AREAS =======================
+       Two-level "What I work on": top-level cards from _data/home_research.yml.
+       Group cards (entries with `children`) expand into a sub-panel. -->
+  {% if site.data.home_research %}
+  <section class="home-section research" id="research">
     <div class="wrap reveal">
       <header class="section-head">
         <p class="section-eyebrow">Research</p>
         <h2 class="section-title">What I work on</h2>
         <p class="section-lead">A few directions at the intersection of biology,
-          mathematics and computation. Follow an area to see the related work.</p>
+          mathematics and computation. Open an area to explore the related work.</p>
       </header>
 
-      <div class="research-grid">
-        {% for area in site.data.research_areas %}
-          {%- assign n = 0 -%}
-          {%- for pub in site.publications -%}
-            {%- if pub.research_area == area.id -%}{%- assign n = n | plus: 1 -%}{%- endif -%}
-          {%- endfor -%}
-          <a class="rcard" href="{{ base_path }}/research/#{{ area.id }}">
-            <span class="rcard__img">
-              <img src="{{ area.image | prepend: base_path }}" alt="{{ area.title }}" loading="lazy">
-            </span>
-            <span class="rcard__body">
-              <span class="rcard__title">{{ area.title }}</span>
-              {% if area.description %}<span class="rcard__desc">{{ area.description }}</span>{% endif %}
-              <span class="rcard__count">{{ n }} publication{% if n != 1 %}s{% endif %} <i class="fas fa-arrow-right" aria-hidden="true"></i></span>
-            </span>
-          </a>
+      {%- comment -%} reusable count helper is inlined per card below {%- endcomment -%}
+
+      <!-- Top-level grid -->
+      <div class="research-grid" id="rgroup-top">
+        {% for item in site.data.home_research %}
+          {% if item.children %}
+            <button type="button" class="rcard rcard--group" data-group="{{ item.id }}"
+                    aria-expanded="false" aria-controls="rgroup-{{ item.id }}">
+              <span class="rcard__img">
+                <img src="{{ item.image | prepend: base_path }}" alt="{{ item.title }}" loading="lazy">
+              </span>
+              <span class="rcard__body">
+                <span class="rcard__title">{{ item.title }}</span>
+                {% if item.description %}<span class="rcard__desc">{{ item.description }}</span>{% endif %}
+                <span class="rcard__count">{{ item.children | size }} topics <i class="fas fa-arrow-right" aria-hidden="true"></i></span>
+              </span>
+            </button>
+          {% else %}
+            {%- assign n = 0 -%}
+            {%- if item.area -%}{%- for pub in site.publications -%}{%- if pub.research_area == item.area -%}{%- assign n = n | plus: 1 -%}{%- endif -%}{%- endfor -%}{%- endif -%}
+            <a class="rcard" href="{{ item.link | prepend: base_path }}">
+              <span class="rcard__img">
+                <img src="{{ item.image | prepend: base_path }}" alt="{{ item.title }}" loading="lazy">
+              </span>
+              <span class="rcard__body">
+                <span class="rcard__title">{{ item.title }}</span>
+                {% if item.description %}<span class="rcard__desc">{{ item.description }}</span>{% endif %}
+                <span class="rcard__count">{% if item.area %}{{ n }} publication{% if n != 1 %}s{% endif %}{% else %}Learn more{% endif %} <i class="fas fa-arrow-right" aria-hidden="true"></i></span>
+              </span>
+            </a>
+          {% endif %}
         {% endfor %}
       </div>
+
+      <!-- Group sub-panels (hidden until their card is opened) -->
+      {% for item in site.data.home_research %}
+        {% if item.children %}
+          <div class="rgroup-panel is-hidden" id="rgroup-{{ item.id }}">
+            <button type="button" class="rgroup-back" data-action="rback">
+              <i class="fas fa-arrow-left" aria-hidden="true"></i> Back to research
+            </button>
+            <h3 class="rgroup-title">{{ item.title }}</h3>
+            {% if item.long_description %}<p class="rgroup-lead">{{ item.long_description }}</p>{% endif %}
+            <div class="research-grid">
+              {% for child in item.children %}
+                {%- assign cn = 0 -%}
+                {%- if child.area -%}{%- for pub in site.publications -%}{%- if pub.research_area == child.area -%}{%- assign cn = cn | plus: 1 -%}{%- endif -%}{%- endfor -%}{%- endif -%}
+                <a class="rcard" href="{{ child.link | prepend: base_path }}">
+                  <span class="rcard__img">
+                    <img src="{{ child.image | prepend: base_path }}" alt="{{ child.title }}" loading="lazy">
+                  </span>
+                  <span class="rcard__body">
+                    <span class="rcard__title">{{ child.title }}</span>
+                    {% if child.description %}<span class="rcard__desc">{{ child.description }}</span>{% endif %}
+                    <span class="rcard__count">{% if child.area %}{{ cn }} publication{% if cn != 1 %}s{% endif %}{% else %}Learn more{% endif %} <i class="fas fa-arrow-right" aria-hidden="true"></i></span>
+                  </span>
+                </a>
+              {% endfor %}
+            </div>
+          </div>
+        {% endif %}
+      {% endfor %}
     </div>
   </section>
   {% endif %}
@@ -329,6 +375,36 @@ layout: default
   .rcard__count i { transition: transform 0.2s ease; }
   .rcard:hover .rcard__count i { transform: translateX(4px); }
 
+  /* group card: same look, plus a "stacked" hint that it opens into more */
+  button.rcard { appearance: none; -webkit-appearance: none; font: inherit; text-align: left; width: 100%; cursor: pointer; }
+  .rcard--group { position: relative; }
+  .rcard--group::before {
+    content: ""; position: absolute; inset: 0; z-index: -1; border-radius: 14px;
+    background: color-mix(in srgb, var(--global-text-color) 4%, transparent);
+    border: 1px solid color-mix(in srgb, var(--global-text-color) 12%, transparent);
+    transform: translate(7px, 7px); transition: transform 0.2s ease;
+  }
+  .rcard--group:hover::before { transform: translate(10px, 10px); }
+  .rcard--group .rcard__count { color: var(--accentB); }
+
+  /* group sub-panel */
+  .home .is-hidden { display: none !important; }
+  .rgroup-panel { animation: rgroupFade 0.28s ease; }
+  .rgroup-back {
+    appearance: none; -webkit-appearance: none; font: inherit; cursor: pointer;
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    padding: 0.5rem 1rem; margin-bottom: 1.4rem; border-radius: 999px;
+    color: var(--global-text-color); background: color-mix(in srgb, var(--global-text-color) 4%, transparent);
+    border: 1px solid color-mix(in srgb, var(--global-text-color) 24%, transparent);
+    transition: border-color 0.16s ease, color 0.16s ease, transform 0.16s ease;
+  }
+  .rgroup-back:hover { border-color: var(--accentA); color: var(--accentA); transform: translateX(-3px); }
+  .rgroup-back i { transition: transform 0.16s ease; }
+  .rgroup-back:hover i { transform: translateX(-3px); }
+  .rgroup-title { font-size: clamp(1.4rem, 3vw, 2rem); margin: 0 0 0.4rem; font-weight: 800; letter-spacing: -0.02em; }
+  .rgroup-lead { font-size: 1.02rem; line-height: 1.6; margin: 0 0 1.8rem; max-width: 44rem; color: color-mix(in srgb, var(--global-text-color) 78%, transparent); }
+  @keyframes rgroupFade { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+
   /* ---------- PUBLICATIONS ---------- */
   .pub-list { list-style: none; margin: 0 0 2rem; padding: 0; }
   .pub {
@@ -398,5 +474,50 @@ layout: default
       });
     }, { threshold: 0.12 });
     els.forEach(function (e) { io.observe(e); });
+  })();
+
+  /* Expandable research groups: open a group card into its sub-panel */
+  (function () {
+    var top = document.getElementById('rgroup-top');
+    if (!top) return;
+    var groupBtns = document.querySelectorAll('.rcard--group');
+    var panels = document.querySelectorAll('.rgroup-panel');
+    var section = document.getElementById('research');
+
+    function openGroup(id) {
+      var opened = false;
+      panels.forEach(function (p) {
+        var match = p.id === 'rgroup-' + id;
+        p.classList.toggle('is-hidden', !match);
+        if (match) opened = true;
+      });
+      if (!opened) return;
+      top.classList.add('is-hidden');
+      groupBtns.forEach(function (b) {
+        b.setAttribute('aria-expanded', b.dataset.group === id ? 'true' : 'false');
+      });
+      if (section) section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function closeGroups() {
+      panels.forEach(function (p) { p.classList.add('is-hidden'); });
+      top.classList.remove('is-hidden');
+      groupBtns.forEach(function (b) { b.setAttribute('aria-expanded', 'false'); });
+      if (section) section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    groupBtns.forEach(function (b) {
+      b.addEventListener('click', function () { openGroup(b.dataset.group); });
+    });
+    document.querySelectorAll('[data-action="rback"]').forEach(function (b) {
+      b.addEventListener('click', closeGroups);
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') {
+        var anyOpen = false;
+        panels.forEach(function (p) { if (!p.classList.contains('is-hidden')) anyOpen = true; });
+        if (anyOpen) closeGroups();
+      }
+    });
   })();
 </script>
