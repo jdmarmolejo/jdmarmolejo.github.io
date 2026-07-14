@@ -159,8 +159,8 @@
     // active genes emit signals along their outgoing edges
     for (var j = 0; j < EDGES.length; j++) {
       var src = nodes[EDGES[j][0]];
-      if (src.glow > 0.55) {
-        var rate = 0.03 * dt * (0.6 + src.glow);
+      if (src.state === 1) { // genes emit ONLY while switched ON
+        var rate = 0.03 * dt * (0.4 + src.glow);
         if (Math.random() < rate) spawn(EDGES[j]);
       }
     }
@@ -189,14 +189,18 @@
   function ctrlPoint(a, b) {
     return { x: (a.x + b.x) / 2 + (b.y - a.y) * 0.08, y: (a.y + b.y) / 2 - (b.x - a.x) * 0.08 };
   }
-  function loopParams(n) {
-    var r = Math.max(16, Math.min(W, H) * 0.05);
-    return { cx: n.x + r * 1.1, cy: n.y - r * 1.3, r: r };
+  function radiusOf(idx) {
+    return (idx === 5 ? 8 : 6) + nodes[idx].glow * 6;
+  }
+  // Self-loop is a ring centred ON the node, so it reads as "self".
+  function loopParams(idx) {
+    var n = nodes[idx];
+    return { cx: n.x, cy: n.y, r: radiusOf(idx) * 2.5 + 6 };
   }
   function pointOnEdge(e, p) {
     var a = nodes[e[0]], b = nodes[e[1]];
     if (e[0] === e[1]) {
-      var lp = loopParams(a);
+      var lp = loopParams(e[0]);
       var ang = -Math.PI * 0.5 + p * Math.PI * 2;
       return { x: lp.cx + Math.cos(ang) * lp.r, y: lp.cy + Math.sin(ang) * lp.r };
     }
@@ -225,40 +229,63 @@
     ctx.restore();
   }
 
+  function drawMolecule(m) {
+    var pt = pointOnEdge(m.e, m.p), rad = m.size * 4;
+    var g = ctx.createRadialGradient(pt.x, pt.y, 0, pt.x, pt.y, rad);
+    g.addColorStop(0, signColor(m.sign, 0.95));
+    g.addColorStop(1, signColor(m.sign, 0));
+    ctx.fillStyle = g;
+    ctx.beginPath(); ctx.arc(pt.x, pt.y, rad, 0, Math.PI * 2); ctx.fill();
+  }
+
+  // Self-loop drawn on top of its node: a ring encircling the gene, with a
+  // repression bar showing it regulates itself, plus its orbiting signal.
+  function drawSelfLoop(e) {
+    var lp = loopParams(e[0]);
+    var gap = 0.4;
+    ctx.strokeStyle = signColor(e[2], 0.55);
+    ctx.lineWidth = 1.6;
+    ctx.beginPath();
+    ctx.arc(lp.cx, lp.cy, lp.r, -Math.PI / 2 + gap, -Math.PI / 2 - gap + Math.PI * 2);
+    ctx.stroke();
+    // repression T-bar at the top gap (radial), = "self-repression"
+    var ga = -Math.PI / 2;
+    ctx.lineWidth = 2.4;
+    ctx.beginPath();
+    ctx.moveTo(lp.cx + Math.cos(ga) * (lp.r - 5), lp.cy + Math.sin(ga) * (lp.r - 5));
+    ctx.lineTo(lp.cx + Math.cos(ga) * (lp.r + 5), lp.cy + Math.sin(ga) * (lp.r + 5));
+    ctx.stroke();
+    // its orbiting molecule(s)
+    for (var k = 0; k < molecules.length; k++) {
+      if (molecules[k].e === e) drawMolecule(molecules[k]);
+    }
+  }
+
   function draw() {
     ctx.clearRect(0, 0, W, H);
 
-    // edges
+    // edges (self-loops are overlaid later, on top of their node)
     ctx.lineWidth = 1;
     for (var i = 0; i < EDGES.length; i++) {
       var e = EDGES[i];
+      if (e[0] === e[1]) continue;
       ctx.strokeStyle = signColor(e[2], 0.16);
-      if (e[0] === e[1]) {
-        var lp = loopParams(nodes[e[0]]);
-        ctx.beginPath(); ctx.arc(lp.cx, lp.cy, lp.r, 0, Math.PI * 2); ctx.stroke();
-      } else {
-        var a = nodes[e[0]], b = nodes[e[1]], c = ctrlPoint(a, b);
-        ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.quadraticCurveTo(c.x, c.y, b.x, b.y); ctx.stroke();
-      }
+      var a = nodes[e[0]], b = nodes[e[1]], c = ctrlPoint(a, b);
+      ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.quadraticCurveTo(c.x, c.y, b.x, b.y); ctx.stroke();
       drawRegulatoryEnd(e);
     }
 
-    // molecules
+    // molecules (skip self-loop ones; those draw with the loop overlay)
     for (var k = 0; k < molecules.length; k++) {
-      var m = molecules[k], pt = pointOnEdge(m.e, m.p), rad = m.size * 4;
-      var g = ctx.createRadialGradient(pt.x, pt.y, 0, pt.x, pt.y, rad);
-      g.addColorStop(0, signColor(m.sign, 0.95));
-      g.addColorStop(1, signColor(m.sign, 0));
-      ctx.fillStyle = g;
-      ctx.beginPath(); ctx.arc(pt.x, pt.y, rad, 0, Math.PI * 2); ctx.fill();
+      if (molecules[k].e[0] === molecules[k].e[1]) continue;
+      drawMolecule(molecules[k]);
     }
 
     // nodes
     for (var j = 0; j < nodes.length; j++) {
       var n = nodes[j];
-      var isHub = j === 5;
       var col = n.glow > 0.5 ? palette.act : palette.rep;
-      var r = (isHub ? 8 : 6) + n.glow * 6;
+      var r = radiusOf(j);
 
       // flash ring when a gene has just switched
       if (n.flash > 0.01) {
@@ -287,6 +314,11 @@
       // little highlight
       ctx.fillStyle = withAlpha(palette.bg, 0.85);
       ctx.beginPath(); ctx.arc(n.x - r * 0.3, n.y - r * 0.3, r * 0.28, 0, Math.PI * 2); ctx.fill();
+    }
+
+    // self-loops on top, so the ring clearly encircles its gene
+    for (var s = 0; s < EDGES.length; s++) {
+      if (EDGES[s][0] === EDGES[s][1]) drawSelfLoop(EDGES[s]);
     }
   }
 
