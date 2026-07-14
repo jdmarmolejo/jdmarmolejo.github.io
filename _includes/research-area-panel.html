@@ -1,0 +1,48 @@
+{% comment %}
+  Renders the publications panel for a single leaf research area.
+  Params:
+    include.area          the area hash (needs id, title, description)
+    include.parent        (optional) id of the parent group, for the back button
+    include.parent_title  (optional) title of the parent group
+{% endcomment %}
+{% assign a = include.area %}
+<section class="area-panel is-hidden" id="area-{{ a.id }}" aria-labelledby="area-{{ a.id }}-title">
+  <button type="button" class="area-panel__back" data-action="back" data-parent="{{ include.parent }}">
+    {% if include.parent %}&larr; Back to {{ include.parent_title }}{% else %}&larr; Back to research areas{% endif %}
+  </button>
+
+  <h2 id="area-{{ a.id }}-title" class="area-panel__title">{{ a.title }}</h2>
+  {% if a.description %}<p class="area-panel__desc">{{ a.description }}</p>{% endif %}
+
+  {% assign area_intro = site.research_areas | where: "area", a.id | first %}
+  {% if area_intro %}
+    <div class="area-panel__intro">{{ area_intro.content | markdownify }}</div>
+  {% endif %}
+
+  {% assign area_pubs = site.publications | where: "research_area", a.id | sort: "date" | reverse %}
+
+  <hr />
+
+  {% if area_pubs.size == 0 %}
+    <p><em>No publications in this area yet.</em></p>
+  {% else %}
+    <h3>Publications</h3>
+    {% if site.publication_category %}
+      {% for category in site.publication_category %}
+        {% assign sub_title_shown = false %}
+        {% for post in area_pubs %}
+          {% if post.category != category[0] %}{% continue %}{% endif %}
+          {% unless sub_title_shown %}
+            <h4 style="margin-top: 1.5em;">{{ category[1].title }}</h4>
+            {% assign sub_title_shown = true %}
+          {% endunless %}
+          {% include archive-single.html %}
+        {% endfor %}
+      {% endfor %}
+    {% else %}
+      {% for post in area_pubs %}
+        {% include archive-single.html %}
+      {% endfor %}
+    {% endif %}
+  {% endif %}
+</section>
