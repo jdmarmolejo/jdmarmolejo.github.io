@@ -84,9 +84,10 @@ layout: default
   </section>
 
   <!-- ======================= RESEARCH AREAS =======================
-       Two-level "What I work on": top-level cards from _data/home_research.yml.
-       Group cards (entries with `children`) expand into a sub-panel. -->
-  {% if site.data.home_research %}
+       Two-level "What I work on": top-level cards from _data/research_areas.yml
+       (the same source the /research/ page uses). Entries with `children`
+       are group cards that expand into a sub-panel. -->
+  {% if site.data.research_areas %}
   <section class="home-section research" id="research">
     <div class="wrap reveal">
       <header class="section-head">
@@ -96,11 +97,9 @@ layout: default
           mathematics and computation. Open an area to explore the related work.</p>
       </header>
 
-      {%- comment -%} reusable count helper is inlined per card below {%- endcomment -%}
-
       <!-- Top-level grid -->
       <div class="research-grid" id="rgroup-top">
-        {% for item in site.data.home_research %}
+        {% for item in site.data.research_areas %}
           {% if item.children %}
             <button type="button" class="rcard rcard--group" data-group="{{ item.id }}"
                     aria-expanded="false" aria-controls="rgroup-{{ item.id }}">
@@ -115,15 +114,15 @@ layout: default
             </button>
           {% else %}
             {%- assign n = 0 -%}
-            {%- if item.area -%}{%- for pub in site.publications -%}{%- if pub.research_area == item.area -%}{%- assign n = n | plus: 1 -%}{%- endif -%}{%- endfor -%}{%- endif -%}
-            <a class="rcard" href="{{ item.link | prepend: base_path }}">
+            {%- for pub in site.publications -%}{%- if pub.research_area == item.id -%}{%- assign n = n | plus: 1 -%}{%- endif -%}{%- endfor -%}
+            <a class="rcard" href="{{ base_path }}/research/#{{ item.id }}">
               <span class="rcard__img">
                 <img src="{{ item.image | prepend: base_path }}" alt="{{ item.title }}" loading="lazy">
               </span>
               <span class="rcard__body">
                 <span class="rcard__title">{{ item.title }}</span>
                 {% if item.description %}<span class="rcard__desc">{{ item.description }}</span>{% endif %}
-                <span class="rcard__count">{% if item.area %}{{ n }} publication{% if n != 1 %}s{% endif %}{% else %}Learn more{% endif %} <i class="fas fa-arrow-right" aria-hidden="true"></i></span>
+                <span class="rcard__count">{{ n }} publication{% if n != 1 %}s{% endif %} <i class="fas fa-arrow-right" aria-hidden="true"></i></span>
               </span>
             </a>
           {% endif %}
@@ -131,7 +130,7 @@ layout: default
       </div>
 
       <!-- Group sub-panels (hidden until their card is opened) -->
-      {% for item in site.data.home_research %}
+      {% for item in site.data.research_areas %}
         {% if item.children %}
           <div class="rgroup-panel is-hidden" id="rgroup-{{ item.id }}">
             <button type="button" class="rgroup-back" data-action="rback">
@@ -142,15 +141,15 @@ layout: default
             <div class="research-grid">
               {% for child in item.children %}
                 {%- assign cn = 0 -%}
-                {%- if child.area -%}{%- for pub in site.publications -%}{%- if pub.research_area == child.area -%}{%- assign cn = cn | plus: 1 -%}{%- endif -%}{%- endfor -%}{%- endif -%}
-                <a class="rcard" href="{{ child.link | prepend: base_path }}">
+                {%- for pub in site.publications -%}{%- if pub.research_area == child.id -%}{%- assign cn = cn | plus: 1 -%}{%- endif -%}{%- endfor -%}
+                <a class="rcard" href="{{ base_path }}/research/#{{ child.id }}">
                   <span class="rcard__img">
                     <img src="{{ child.image | prepend: base_path }}" alt="{{ child.title }}" loading="lazy">
                   </span>
                   <span class="rcard__body">
                     <span class="rcard__title">{{ child.title }}</span>
                     {% if child.description %}<span class="rcard__desc">{{ child.description }}</span>{% endif %}
-                    <span class="rcard__count">{% if child.area %}{{ cn }} publication{% if cn != 1 %}s{% endif %}{% else %}Learn more{% endif %} <i class="fas fa-arrow-right" aria-hidden="true"></i></span>
+                    <span class="rcard__count">{{ cn }} publication{% if cn != 1 %}s{% endif %} <i class="fas fa-arrow-right" aria-hidden="true"></i></span>
                   </span>
                 </a>
               {% endfor %}
