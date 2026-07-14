@@ -1,0 +1,145 @@
+<svg viewBox="0 0 800 500" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <radialGradient id="bgGrad" cx="50%" cy="50%" r="80%">
+      <stop offset="0%" stop-color="#112c47"/>
+      <stop offset="100%" stop-color="#06121f"/>
+    </radialGradient>
+
+    <radialGradient id="cellFill" cx="50%" cy="45%" r="60%">
+      <stop offset="0%" stop-color="#ffb0c4" stop-opacity="0.26"/>
+      <stop offset="60%" stop-color="#ff6b8e" stop-opacity="0.13"/>
+      <stop offset="100%" stop-color="#7a2440" stop-opacity="0.03"/>
+    </radialGradient>
+
+    <pattern id="bgDots" width="22" height="22" patternUnits="userSpaceOnUse">
+      <circle cx="11" cy="11" r="0.6" fill="#ffffff" opacity="0.06"/>
+    </pattern>
+
+    <pattern id="mathGrid" width="26" height="26" patternUnits="userSpaceOnUse">
+      <path d="M 0 13 L 26 13 M 13 0 L 13 26" stroke="#4dd6e0" stroke-width="0.35" opacity="0.16"/>
+    </pattern>
+
+    <filter id="softGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="1.5" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <clipPath id="cellClip">
+      <circle cx="400" cy="250" r="192"/>
+    </clipPath>
+
+    <marker id="arrTeal" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+      <path d="M 0 0 L 7 4 L 0 8 Z" fill="#7ce9d9"/>
+    </marker>
+  </defs>
+
+  <!-- Background -->
+  <rect width="800" height="500" fill="url(#bgGrad)"/>
+  <rect width="800" height="500" fill="url(#bgDots)"/>
+
+  <!-- =========== CELL INTERIOR (a cell described by mathematics) =========== -->
+  <g clip-path="url(#cellClip)">
+    <circle cx="400" cy="250" r="192" fill="url(#cellFill)"/>
+    <circle cx="400" cy="250" r="192" fill="url(#mathGrid)"/>
+
+    <!-- Coordinate axes -->
+    <g stroke="#7ce9d9" stroke-width="1.4" opacity="0.8">
+      <line x1="270" y1="360" x2="540" y2="360" marker-end="url(#arrTeal)"/>
+      <line x1="290" y1="392" x2="290" y2="130" marker-end="url(#arrTeal)"/>
+    </g>
+    <g fill="#7ce9d9" font-family="Georgia, serif" font-style="italic" font-size="15" opacity="0.85">
+      <text x="546" y="365">t</text>
+      <text x="278" y="126">x</text>
+    </g>
+    <!-- axis ticks -->
+    <g stroke="#7ce9d9" stroke-width="1" opacity="0.5">
+      <line x1="340" y1="356" x2="340" y2="364"/>
+      <line x1="400" y1="356" x2="400" y2="364"/>
+      <line x1="460" y1="356" x2="460" y2="364"/>
+      <line x1="286" y1="300" x2="294" y2="300"/>
+      <line x1="286" y1="240" x2="294" y2="240"/>
+      <line x1="286" y1="180" x2="294" y2="180"/>
+    </g>
+
+    <!-- Phase-plane limit cycle -->
+    <path d="M 400 150
+             C 486 158, 512 250, 476 322
+             C 448 378, 352 378, 324 322
+             C 288 250, 314 158, 400 150 Z"
+          fill="none" stroke="#4dd6e0" stroke-width="2.2" filter="url(#softGlow)" opacity="0.95"/>
+    <!-- Inward spiral trajectory approaching the cycle -->
+    <path d="M 400 250
+             C 372 250, 360 280, 384 296
+             C 416 316, 452 288, 446 250
+             C 440 206, 384 196, 356 230
+             C 330 262, 356 316, 408 322"
+          fill="none" stroke="#7ce9d9" stroke-width="1.3" opacity="0.7" stroke-dasharray="1 4" stroke-linecap="round"/>
+
+    <!-- Sampled data points on the trajectory -->
+    <g fill="#f5e9d3">
+      <circle cx="400" cy="150" r="3"/>
+      <circle cx="486" cy="205" r="3"/>
+      <circle cx="476" cy="322" r="3"/>
+      <circle cx="360" cy="352" r="3"/>
+      <circle cx="308" cy="230" r="3"/>
+    </g>
+
+    <!-- A small histogram (distribution over molecule number) bottom-right -->
+    <g transform="translate(452,300)" opacity="0.85">
+      <g fill="#ff8fa8" fill-opacity="0.55" stroke="#ffb0c4" stroke-width="0.8">
+        <rect x="0"  y="34" width="9" height="10"/>
+        <rect x="11" y="22" width="9" height="22"/>
+        <rect x="22" y="8"  width="9" height="36"/>
+        <rect x="33" y="18" width="9" height="26"/>
+        <rect x="44" y="32" width="9" height="12"/>
+      </g>
+      <line x1="-3" y1="44" x2="56" y2="44" stroke="#ffb0c4" stroke-width="0.9" opacity="0.7"/>
+    </g>
+  </g>
+
+  <!-- =========== NUCLEUS (keeps it unmistakably a cell) =========== -->
+  <g filter="url(#softGlow)">
+    <circle cx="452" cy="188" r="52" fill="#c94565" fill-opacity="0.32"/>
+    <circle cx="452" cy="188" r="52" fill="none" stroke="#ffb0c4" stroke-width="1.7"/>
+  </g>
+  <path d="M 430 178 Q 448 168 466 182 Q 476 192 470 204" stroke="#ffb0c4" stroke-width="1.6" fill="none" stroke-linecap="round" opacity="0.9"/>
+  <path d="M 428 200 Q 448 214 474 198" stroke="#ffb0c4" stroke-width="1.4" fill="none" stroke-linecap="round" opacity="0.8"/>
+  <circle cx="440" cy="180" r="7" fill="#9c2f4d" opacity="0.55"/>
+
+  <!-- =========== CELL MEMBRANE (outline + phospholipid heads) =========== -->
+  <circle cx="400" cy="250" r="192" fill="none" stroke="#ff8fa8" stroke-width="2.3"/>
+  <circle cx="400" cy="250" r="183" fill="none" stroke="#ff6b8e" stroke-width="0.9" opacity="0.55"/>
+  <g fill="#ffb0c4">
+    <circle cx="592" cy="250" r="2.2"/>
+    <circle cx="585" cy="200" r="2.2"/>
+    <circle cx="565" cy="154" r="2.2"/>
+    <circle cx="530" cy="118" r="2.2"/>
+    <circle cx="486" cy="92"  r="2.2"/>
+    <circle cx="435" cy="76"  r="2.2"/>
+    <circle cx="365" cy="76"  r="2.2"/>
+    <circle cx="314" cy="92"  r="2.2"/>
+    <circle cx="270" cy="118" r="2.2"/>
+    <circle cx="235" cy="154" r="2.2"/>
+    <circle cx="215" cy="200" r="2.2"/>
+    <circle cx="208" cy="250" r="2.2"/>
+    <circle cx="215" cy="300" r="2.2"/>
+    <circle cx="235" cy="346" r="2.2"/>
+    <circle cx="314" cy="408" r="2.2"/>
+    <circle cx="435" cy="424" r="2.2"/>
+    <circle cx="530" cy="382" r="2.2"/>
+    <circle cx="585" cy="300" r="2.2"/>
+  </g>
+
+  <!-- =========== FLOATING EQUATIONS =========== -->
+  <g font-family="Georgia, 'Times New Roman', serif" font-style="italic" fill="#f5e9d3">
+    <text x="150" y="120" font-size="26" opacity="0.9">&#8706;<tspan font-size="16" dy="6">t</tspan><tspan dy="-6"> P = &#8466;P</tspan></text>
+    <text x="600" y="150" font-size="22" opacity="0.82">dx/dt = f(x)</text>
+    <text x="150" y="410" font-size="22" opacity="0.82">&#10216;n&#10217;, &#963;&#178;</text>
+  </g>
+
+  <!-- Caption -->
+  <text x="400" y="480" font-family="'Courier New', monospace" font-size="11" fill="#7ce9d9" opacity="0.55" text-anchor="middle" letter-spacing="3">M O D E L L I N G   T H E   C E L L</text>
+</svg>
