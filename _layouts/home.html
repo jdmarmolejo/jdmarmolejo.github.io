@@ -1,0 +1,402 @@
+---
+layout: default
+---
+
+{% include base_path %}
+{% assign a = site.author %}
+
+<div class="home">
+
+  <!-- ============================ HERO ============================ -->
+  <section class="hero" id="top">
+    <canvas id="hero-canvas" aria-hidden="true"></canvas>
+    <div class="hero__grid" aria-hidden="true"></div>
+
+    <div class="hero__inner">
+      <div class="hero__text">
+        <p class="hero__eyebrow">PhD Researcher · Mathematical &amp; Computational Biology</p>
+        <h1 class="hero__name">{{ a.name | default: site.name }}</h1>
+        <p class="hero__tagline">
+          I build <strong>mathematical and computational models</strong> to understand how
+          <strong>gene expression</strong> and <strong>cellular dynamics</strong> emerge from
+          noisy molecular processes.
+        </p>
+
+        <div class="hero__actions">
+          <a class="cta cta--primary" href="{{ base_path }}/research/">
+            <i class="fas fa-flask" aria-hidden="true"></i> Explore research
+          </a>
+          <a class="cta cta--ghost" href="{{ base_path }}/cv/">
+            <i class="fas fa-file-lines" aria-hidden="true"></i> Curriculum Vitae
+          </a>
+        </div>
+
+        <ul class="hero__social">
+          {% if a.email %}
+            <li><a href="mailto:{{ a.email }}" aria-label="Email"><i class="fas fa-envelope" aria-hidden="true"></i></a></li>
+          {% endif %}
+          {% if a.googlescholar %}
+            <li><a href="{{ a.googlescholar }}" aria-label="Google Scholar" rel="noopener"><i class="ai ai-google-scholar" aria-hidden="true"></i></a></li>
+          {% endif %}
+          {% if a.linkedin %}
+            <li><a href="https://www.linkedin.com/in/{{ a.linkedin }}" aria-label="LinkedIn" rel="noopener"><i class="fab fa-linkedin-in" aria-hidden="true"></i></a></li>
+          {% endif %}
+          {% if a.bluesky %}
+            <li><a href="https://bsky.app/profile/{{ a.bluesky }}" aria-label="Bluesky" rel="noopener"><i class="fab fa-bluesky" aria-hidden="true"></i></a></li>
+          {% endif %}
+          {% if a.github %}
+            <li><a href="https://github.com/{{ a.github }}" aria-label="GitHub" rel="noopener"><i class="fab fa-github" aria-hidden="true"></i></a></li>
+          {% endif %}
+        </ul>
+
+        <p class="hero__affil">
+          <i class="fas fa-building-columns" aria-hidden="true"></i> {{ a.employer }}
+          &nbsp;·&nbsp;
+          <i class="fas fa-location-dot" aria-hidden="true"></i> {{ a.location }}
+        </p>
+      </div>
+
+      <figure class="hero__viz-caption" aria-hidden="true">
+        <figcaption>A gene-regulatory circuit. Nodes are genes; travelling
+          points are molecules exchanged as noisy signals.</figcaption>
+      </figure>
+    </div>
+
+    <a class="hero__scroll" href="#about" aria-label="Scroll to content">
+      <span class="hero__scroll-dot"></span>
+    </a>
+  </section>
+
+  <!-- ============================ ABOUT ============================ -->
+  <section class="home-section about" id="about">
+    <div class="wrap reveal">
+      <div class="about__grid">
+        <div class="about__photo">
+          <img src="{{ a.avatar | prepend: '/images/' | prepend: base_path }}"
+               alt="{{ a.name }}" loading="lazy">
+        </div>
+        <div class="about__body">
+          <p class="section-eyebrow">About</p>
+          {{ content }}
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================= RESEARCH AREAS ======================= -->
+  {% if site.data.research_areas %}
+  <section class="home-section research">
+    <div class="wrap reveal">
+      <header class="section-head">
+        <p class="section-eyebrow">Research</p>
+        <h2 class="section-title">What I work on</h2>
+        <p class="section-lead">A few directions at the intersection of biology,
+          mathematics and computation. Follow an area to see the related work.</p>
+      </header>
+
+      <div class="research-grid">
+        {% for area in site.data.research_areas %}
+          {%- assign n = 0 -%}
+          {%- for pub in site.publications -%}
+            {%- if pub.research_area == area.id -%}{%- assign n = n | plus: 1 -%}{%- endif -%}
+          {%- endfor -%}
+          <a class="rcard" href="{{ base_path }}/research/#{{ area.id }}">
+            <span class="rcard__img">
+              <img src="{{ area.image | prepend: base_path }}" alt="{{ area.title }}" loading="lazy">
+            </span>
+            <span class="rcard__body">
+              <span class="rcard__title">{{ area.title }}</span>
+              {% if area.description %}<span class="rcard__desc">{{ area.description }}</span>{% endif %}
+              <span class="rcard__count">{{ n }} publication{% if n != 1 %}s{% endif %} <i class="fas fa-arrow-right" aria-hidden="true"></i></span>
+            </span>
+          </a>
+        {% endfor %}
+      </div>
+    </div>
+  </section>
+  {% endif %}
+
+  <!-- ==================== SELECTED PUBLICATIONS ====================
+       Shows publications flagged with `featured: true` in their front
+       matter (curated). If none are flagged, it falls back to the most
+       recent publications so the section is never empty. -->
+  {% assign featured = site.publications | where: "featured", true | sort: 'date' | reverse %}
+  {% if featured.size > 0 %}
+    {% assign recent = featured %}
+  {% else %}
+    {% assign recent = site.publications | sort: 'date' | reverse %}
+  {% endif %}
+  {% if recent.size > 0 %}
+  <section class="home-section pubs">
+    <div class="wrap reveal">
+      <header class="section-head">
+        <p class="section-eyebrow">Publications</p>
+        <h2 class="section-title">Selected &amp; recent work</h2>
+      </header>
+
+      <ol class="pub-list">
+        {% for pub in recent limit: 3 %}
+          <li class="pub">
+            <span class="pub__year">{{ pub.date | date: "%Y" }}</span>
+            <div class="pub__meta">
+              <h3 class="pub__title">
+                {% if pub.paperurl %}<a href="{{ pub.paperurl }}" rel="noopener">{{ pub.title }}</a>
+                {% else %}<a href="{{ pub.url | prepend: base_path }}">{{ pub.title }}</a>{% endif %}
+              </h3>
+              {% if pub.venue %}<p class="pub__venue">{{ pub.venue }}</p>{% endif %}
+              {% if pub.excerpt %}<p class="pub__excerpt">{{ pub.excerpt | markdownify | strip_html | truncate: 180 }}</p>{% endif %}
+            </div>
+          </li>
+        {% endfor %}
+      </ol>
+
+      <a class="text-link" href="{{ base_path }}/research/">See all research &amp; publications <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+    </div>
+  </section>
+  {% endif %}
+
+  <!-- =========================== CONTACT ========================== -->
+  <section class="home-section contact">
+    <div class="wrap reveal">
+      <div class="contact__card">
+        <h2 class="contact__title">Let&rsquo;s talk science</h2>
+        <p class="contact__lead">Interested in stochastic modelling of biological systems,
+          collaborations, or a chat about gene expression? I&rsquo;m always happy to hear from you.</p>
+        <div class="contact__actions">
+          {% if a.email %}<a class="cta cta--primary" href="mailto:{{ a.email }}"><i class="fas fa-envelope" aria-hidden="true"></i> {{ a.email }}</a>{% endif %}
+          {% if a.googlescholar %}<a class="cta cta--ghost" href="{{ a.googlescholar }}" rel="noopener"><i class="ai ai-google-scholar" aria-hidden="true"></i> Google Scholar</a>{% endif %}
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<!-- ============================ STYLES ============================ -->
+<style>
+  .home { --accentA: var(--global-base-color); --accentB: var(--global-link-color); }
+  .home a { text-decoration: none; }
+
+  /* ---------- HERO ---------- */
+  .hero {
+    position: relative;
+    min-height: 92vh;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    padding: 6.5rem 1.25rem 3rem;
+    background:
+      radial-gradient(1200px 600px at 78% 18%, color-mix(in srgb, var(--accentA) 16%, transparent), transparent 60%),
+      radial-gradient(900px 500px at 12% 88%, color-mix(in srgb, var(--accentB) 13%, transparent), transparent 60%),
+      var(--global-bg-color);
+  }
+  #hero-canvas {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    z-index: 0;
+  }
+  .hero__grid {
+    position: absolute; inset: 0; z-index: 0; pointer-events: none;
+    background-image:
+      linear-gradient(color-mix(in srgb, var(--global-text-color) 6%, transparent) 1px, transparent 1px),
+      linear-gradient(90deg, color-mix(in srgb, var(--global-text-color) 6%, transparent) 1px, transparent 1px);
+    background-size: 46px 46px;
+    -webkit-mask-image: radial-gradient(circle at 50% 40%, #000 30%, transparent 78%);
+            mask-image: radial-gradient(circle at 50% 40%, #000 30%, transparent 78%);
+    opacity: 0.6;
+  }
+  .hero__inner {
+    position: relative; z-index: 1;
+    max-width: 1180px; margin: 0 auto; width: 100%;
+    display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 0.9fr);
+    align-items: center; gap: 2rem;
+    pointer-events: none;
+  }
+  .hero__inner a { pointer-events: auto; }
+  .hero__text { max-width: 34rem; }
+
+  .hero__eyebrow {
+    text-transform: uppercase; letter-spacing: 0.18em;
+    font-size: 0.72rem; font-weight: 700;
+    color: var(--accentA); margin: 0 0 0.9rem;
+  }
+  .hero__name {
+    font-size: clamp(2.3rem, 6vw, 4rem); line-height: 1.03;
+    margin: 0 0 1rem; font-weight: 800; letter-spacing: -0.02em;
+    color: var(--global-text-color);
+  }
+  .hero__tagline {
+    font-size: clamp(1rem, 1.6vw, 1.2rem); line-height: 1.6;
+    color: color-mix(in srgb, var(--global-text-color) 82%, transparent);
+    margin: 0 0 1.8rem;
+  }
+  .hero__tagline strong { color: var(--accentA); font-weight: 600; }
+
+  .hero__actions { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 1.6rem; }
+  .cta {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    padding: 0.7rem 1.25rem; border-radius: 999px;
+    font-weight: 600; font-size: 0.95rem;
+    transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease, border-color 0.18s ease;
+  }
+  .cta--primary {
+    background: var(--accentA); color: var(--global-bg-color) !important;
+    box-shadow: 0 8px 24px -8px color-mix(in srgb, var(--accentA) 70%, transparent);
+  }
+  .cta--primary:hover { transform: translateY(-2px); box-shadow: 0 12px 30px -8px color-mix(in srgb, var(--accentA) 80%, transparent); }
+  .cta--ghost {
+    color: var(--global-text-color) !important;
+    border: 1px solid color-mix(in srgb, var(--global-text-color) 28%, transparent);
+    background: color-mix(in srgb, var(--global-text-color) 4%, transparent);
+  }
+  .cta--ghost:hover { transform: translateY(-2px); border-color: var(--accentA); color: var(--accentA) !important; }
+
+  .hero__social { display: flex; gap: 0.6rem; list-style: none; margin: 0 0 1.4rem; padding: 0; }
+  .hero__social a {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 2.4rem; height: 2.4rem; border-radius: 50%;
+    color: var(--global-text-color) !important;
+    border: 1px solid color-mix(in srgb, var(--global-text-color) 22%, transparent);
+    transition: transform 0.16s ease, color 0.16s ease, border-color 0.16s ease, background 0.16s ease;
+  }
+  .hero__social a:hover {
+    transform: translateY(-3px); color: var(--accentA) !important;
+    border-color: var(--accentA);
+    background: color-mix(in srgb, var(--accentA) 12%, transparent);
+  }
+  .hero__affil {
+    font-size: 0.85rem; margin: 0;
+    color: color-mix(in srgb, var(--global-text-color) 62%, transparent);
+  }
+  .hero__affil i { color: var(--accentA); }
+
+  .hero__viz-caption { margin: 0; align-self: end; text-align: right; }
+  .hero__viz-caption figcaption {
+    font-size: 0.72rem; line-height: 1.5; max-width: 16rem; margin-left: auto;
+    color: color-mix(in srgb, var(--global-text-color) 48%, transparent);
+  }
+
+  .hero__scroll {
+    position: absolute; left: 50%; bottom: 1.4rem; transform: translateX(-50%);
+    z-index: 2; width: 26px; height: 42px; border-radius: 14px;
+    border: 2px solid color-mix(in srgb, var(--global-text-color) 35%, transparent);
+    display: flex; justify-content: center; padding-top: 7px;
+  }
+  .hero__scroll-dot {
+    width: 4px; height: 8px; border-radius: 2px; background: var(--accentA);
+    animation: scrolldot 1.6s ease-in-out infinite;
+  }
+  @keyframes scrolldot { 0% { opacity: 0; transform: translateY(-4px);} 40%{opacity:1;} 80%{opacity:0; transform: translateY(9px);} 100%{opacity:0;} }
+
+  /* ---------- SHARED SECTIONS ---------- */
+  .home-section { padding: clamp(3.5rem, 8vw, 6rem) 1.25rem; }
+  .wrap { max-width: 1080px; margin: 0 auto; }
+  .section-eyebrow {
+    text-transform: uppercase; letter-spacing: 0.16em; font-size: 0.72rem;
+    font-weight: 700; color: var(--accentA); margin: 0 0 0.6rem;
+  }
+  .section-head { max-width: 40rem; margin-bottom: 2.5rem; }
+  .section-title { font-size: clamp(1.7rem, 3.5vw, 2.4rem); margin: 0 0 0.6rem; font-weight: 800; letter-spacing: -0.02em; }
+  .section-lead { font-size: 1.05rem; line-height: 1.6; color: color-mix(in srgb, var(--global-text-color) 78%, transparent); margin: 0; }
+
+  /* ---------- ABOUT ---------- */
+  .about__grid { display: grid; grid-template-columns: 260px 1fr; gap: 2.5rem; align-items: start; }
+  .about__photo img {
+    width: 100%; border-radius: 16px; display: block;
+    box-shadow: 0 20px 50px -20px rgba(0,0,0,0.6);
+    border: 1px solid color-mix(in srgb, var(--global-text-color) 12%, transparent);
+  }
+  .about__body { font-size: 1.05rem; line-height: 1.7; }
+  .about__body :is(h2,h3) { margin-top: 1.4rem; }
+  .about__body p:first-of-type { margin-top: 0; }
+
+  /* ---------- RESEARCH GRID ---------- */
+  .research-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.5rem; }
+  .rcard {
+    display: flex; flex-direction: column; overflow: hidden; border-radius: 14px;
+    background: color-mix(in srgb, var(--global-text-color) 4%, transparent);
+    border: 1px solid color-mix(in srgb, var(--global-text-color) 12%, transparent);
+    color: var(--global-text-color) !important;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  }
+  .rcard:hover { transform: translateY(-4px); box-shadow: 0 18px 40px -18px rgba(0,0,0,0.55); border-color: color-mix(in srgb, var(--accentA) 55%, transparent); }
+  .rcard__img { display: block; aspect-ratio: 16/10; overflow: hidden; background: color-mix(in srgb, var(--global-text-color) 6%, transparent); }
+  .rcard__img img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.4s ease; }
+  .rcard:hover .rcard__img img { transform: scale(1.05); }
+  .rcard__body { padding: 1.1rem 1.2rem 1.3rem; display: flex; flex-direction: column; gap: 0.4rem; flex: 1; }
+  .rcard__title { font-size: 1.1rem; font-weight: 700; line-height: 1.3; }
+  .rcard__desc { font-size: 0.9rem; line-height: 1.5; color: color-mix(in srgb, var(--global-text-color) 70%, transparent); }
+  .rcard__count { margin-top: auto; padding-top: 0.5rem; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accentA); font-weight: 600; }
+  .rcard__count i { transition: transform 0.2s ease; }
+  .rcard:hover .rcard__count i { transform: translateX(4px); }
+
+  /* ---------- PUBLICATIONS ---------- */
+  .pub-list { list-style: none; margin: 0 0 2rem; padding: 0; }
+  .pub {
+    display: grid; grid-template-columns: 5rem 1fr; gap: 1.25rem;
+    padding: 1.4rem 0;
+    border-top: 1px solid color-mix(in srgb, var(--global-text-color) 12%, transparent);
+  }
+  .pub:last-child { border-bottom: 1px solid color-mix(in srgb, var(--global-text-color) 12%, transparent); }
+  .pub__year { font-weight: 800; font-size: 1.1rem; color: var(--accentA); }
+  .pub__title { margin: 0 0 0.3rem; font-size: 1.15rem; line-height: 1.35; }
+  .pub__title a { color: var(--global-text-color) !important; transition: color 0.16s ease; }
+  .pub__title a:hover { color: var(--accentA) !important; }
+  .pub__venue { margin: 0 0 0.4rem; font-style: italic; font-size: 0.92rem; color: color-mix(in srgb, var(--global-text-color) 70%, transparent); }
+  .pub__excerpt { margin: 0; font-size: 0.95rem; line-height: 1.6; color: color-mix(in srgb, var(--global-text-color) 72%, transparent); }
+  .text-link { font-weight: 600; color: var(--accentA) !important; display: inline-flex; align-items: center; gap: 0.4rem; }
+  .text-link i { transition: transform 0.2s ease; }
+  .text-link:hover i { transform: translateX(4px); }
+
+  /* ---------- CONTACT ---------- */
+  .contact__card {
+    text-align: center; padding: clamp(2.5rem, 6vw, 4rem) 1.5rem; border-radius: 20px;
+    background:
+      radial-gradient(600px 300px at 30% 0%, color-mix(in srgb, var(--accentA) 14%, transparent), transparent 70%),
+      radial-gradient(600px 300px at 80% 100%, color-mix(in srgb, var(--accentB) 12%, transparent), transparent 70%),
+      color-mix(in srgb, var(--global-text-color) 4%, transparent);
+    border: 1px solid color-mix(in srgb, var(--global-text-color) 12%, transparent);
+  }
+  .contact__title { font-size: clamp(1.6rem, 3.5vw, 2.2rem); margin: 0 0 0.7rem; font-weight: 800; }
+  .contact__lead { max-width: 38rem; margin: 0 auto 1.8rem; line-height: 1.6; color: color-mix(in srgb, var(--global-text-color) 78%, transparent); }
+  .contact__actions { display: flex; flex-wrap: wrap; gap: 0.75rem; justify-content: center; }
+
+  /* ---------- SCROLL REVEAL ---------- */
+  .reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.7s ease, transform 0.7s ease; }
+  .reveal.is-visible { opacity: 1; transform: none; }
+
+  /* ---------- RESPONSIVE ---------- */
+  @media (max-width: 860px) {
+    .hero { min-height: auto; padding-top: 5.5rem; }
+    .hero__inner { grid-template-columns: 1fr; }
+    #hero-canvas { opacity: 0.55; }
+    .hero__viz-caption { display: none; }
+    .hero__scroll { display: none; }
+    .about__grid { grid-template-columns: 1fr; }
+    .about__photo { max-width: 220px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .reveal { opacity: 1; transform: none; transition: none; }
+    .hero__scroll-dot { animation: none; }
+  }
+</style>
+
+<!-- ========================= INTERACTIVITY ========================= -->
+<script src="{{ base_path }}/assets/js/hero-network.js"></script>
+<script>
+  (function () {
+    var els = document.querySelectorAll('.reveal');
+    if (!('IntersectionObserver' in window)) {
+      els.forEach(function (e) { e.classList.add('is-visible'); });
+      return;
+    }
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('is-visible');
+          io.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.12 });
+    els.forEach(function (e) { io.observe(e); });
+  })();
+</script>
