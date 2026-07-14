@@ -1,0 +1,42 @@
+# =====================================================================
+# Home page "What I work on" section
+# ---------------------------------------------------------------------
+# Two-level structure used only by the homepage (_layouts/home.html).
+#
+# Top-level entries are rendered as cards. An entry with `children:`
+# becomes a GROUP card: clicking it hides the top grid and reveals its
+# child cards. An entry without children is a normal link card.
+#
+# Fields:
+#   title        (required) card heading
+#   description  (optional) short subtitle
+#   image        (required) path to an SVG/image in /images/
+#   link         (optional) where the card points (leaf cards only)
+#   area         (optional) id of a research area in research_areas.yml;
+#                if set, the card shows a live "N publications" count
+#   id           (group only) unique id used to wire up the sub-panel
+#   long_description (group only) intro shown above the child cards
+#   children     (group only) list of leaf cards, same fields as above
+# =====================================================================
+
+- title: "Information Theory in Biochemical Systems"
+  description: "How gene networks transmit, store and process information despite molecular noise."
+  image: /images/cell-info-theory.svg
+  area: information-theory
+  link: /research/#information-theory
+
+- id: mathematical-cellular-biology
+  title: "Mathematical Cellular Biology"
+  description: "Treating the single cell as a self-replicating system that grows, divides and regulates itself."
+  image: /images/cell-math-biology.svg
+  long_description: "Coarse-grained and stochastic models linking growth, division and gene expression across the cell cycle."
+  children:
+    - title: "Effects of cell cycle on gene expression"
+      description: "How growth and division shape mRNA and protein fluctuations in single cells."
+      image: /images/cell-division-circuit.svg
+      area: cell-growth
+      link: /research/#cell-growth
+    - title: "Understanding Cell Size Control"
+      description: "What sets a cell's size, and how adder/sizer division strategies emerge."
+      image: /images/cell-size-control.svg
+      link: /research/
