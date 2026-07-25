@@ -26,7 +26,10 @@
   /* ---------- decorative backdrop (content pages only) ----------
      #main exists on every page except the homepage, so these rules
      never touch the hero. A fixed layer keeps it cheap to scroll. */
-  body:has(#main) {
+  /* Applied site-wide so the homepage's lower sections share the same
+     backdrop as every other page. The hero paints its own opaque
+     background on top, so it keeps its dedicated treatment. */
+  body {
     background-image:
       /* faint blueprint grid */
       linear-gradient(color-mix(in srgb, var(--global-text-color) 7%, transparent) 1px, transparent 1px),
