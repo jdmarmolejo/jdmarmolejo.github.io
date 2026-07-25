@@ -23,9 +23,28 @@
      .sidebar), so none of these rules touch it.
      ===================================================================== -->
 <style>
+  /* ---------- decorative backdrop (content pages only) ----------
+     #main exists on every page except the homepage, so these rules
+     never touch the hero. A fixed layer keeps it cheap to scroll. */
+  body:has(#main) {
+    background-image:
+      /* faint blueprint grid */
+      linear-gradient(color-mix(in srgb, var(--global-text-color) 7%, transparent) 1px, transparent 1px),
+      linear-gradient(90deg, color-mix(in srgb, var(--global-text-color) 7%, transparent) 1px, transparent 1px),
+      /* brand glows */
+      radial-gradient(1000px 620px at 86% -12%,
+        color-mix(in srgb, var(--global-base-color) 26%, transparent), transparent 62%),
+      radial-gradient(840px 540px at -14% 112%,
+        color-mix(in srgb, var(--global-link-color) 22%, transparent), transparent 62%);
+    background-size: 46px 46px, 46px 46px, auto, auto;
+    background-repeat: repeat, repeat, no-repeat, no-repeat;
+    background-attachment: fixed, fixed, fixed, fixed;
+  }
+
   /* full-width, centred content (override the theme's sidebar grid) */
   .sidebar { display: none !important; }
   #main {
+    position: relative;
     max-width: 880px !important;
     margin: 0 auto !important;
     padding: 3rem 1.25rem 4.5rem !important;
@@ -66,12 +85,27 @@
   .grid__item { margin-bottom: 1rem; }
   .archive__item {
     display: block;
+    position: relative;
     border: 1px solid color-mix(in srgb, var(--global-text-color) 12%, transparent);
-    background: color-mix(in srgb, var(--global-text-color) 3%, transparent);
+    background: color-mix(in srgb, var(--global-bg-color) 82%, transparent);
+    -webkit-backdrop-filter: blur(6px);
+            backdrop-filter: blur(6px);
     border-radius: 12px;
     padding: 1.25rem 1.5rem;
+    overflow: hidden;
     transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
   }
+  /* accent edge that lights up on hover */
+  .archive__item::before {
+    content: "";
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+    background: var(--global-base-color);
+    opacity: 0;
+    transition: opacity 0.18s ease;
+  }
+  .archive__item:hover::before { opacity: 1; }
   .archive__item:hover {
     transform: translateY(-3px);
     border-color: color-mix(in srgb, var(--global-base-color) 55%, transparent);
