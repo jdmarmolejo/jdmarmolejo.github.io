@@ -1,5 +1,6 @@
 ---
 permalink: /
+bg_scene: diffusion
 title: "About me"
 layout: home
 author_profile: false
