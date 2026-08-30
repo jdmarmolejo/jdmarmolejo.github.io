@@ -1,14 +1,14 @@
 ---
-title: "Teaching experience 2"
+title: "Experimental Physics 2"
 collection: teaching
-type: "Workshop"
+type: "Undergraduate course"
 permalink: /teaching/2015-spring-teaching-1
-venue: "University 1, Department"
-date: 2015-01-01
-location: "City, Country"
+venue: "University of Edinburgh, Department of Physics"
+date: "January to April, 2025; January to April, 2026"
+location: "Edinburgh, Scotland"
 ---
 
-This is a description of a teaching experience. You can use markdown like any other post.
+I demonstrated the course Physics 2 to second-year physics students. Among my responsibilities were grading laboratory reports, assisting students with their experiments and teaching them good experimental practices.
 
 Heading 1
 ======
