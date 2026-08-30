@@ -130,7 +130,9 @@ author_profile: true
 
   .research-card {
     position: relative;
-    background: transparent;
+    background: color-mix(in srgb, var(--global-bg-color) 90%, transparent);
+    -webkit-backdrop-filter: blur(14px);
+            backdrop-filter: blur(14px);
     border: 1px solid rgba(128, 128, 128, 0.25);
     padding: 0;
     margin: 0;
