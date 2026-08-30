@@ -1,14 +1,14 @@
 ---
-title: "Teaching experience 1"
+title: "Experimental Physics 1"
 collection: teaching
 type: "Undergraduate course"
 permalink: /teaching/2014-spring-teaching-1
-venue: "University 1, Department"
-date: 2014-01-01
-location: "City, Country"
+venue: "Universidad de los Andes, Department of Physics"
+date: 2023
+location: "Bogotá, Colombia"
 ---
 
-This is a description of a teaching experience. You can use markdown like any other post.
+I taught the course Experimental Physics 1 to first-year science and engineering students. Among my responsibilities were delivering the course, grading laboratory reports, designing assessment activities, and assisting students with their experiments.
 
 Heading 1
 ======
