@@ -171,7 +171,55 @@
   @media (max-width: 640px) {
     .bg-scene { opacity: 0.4; }
   }
-     
+  /* ---------- 1. narrative text gets its own readable surface ---------- */
+  .area-panel__sheet {
+    background: color-mix(in srgb, var(--global-bg-color) 88%, transparent);
+    -webkit-backdrop-filter: blur(14px);
+            backdrop-filter: blur(14px);
+    border: 1px solid color-mix(in srgb, var(--global-text-color) 12%, transparent);
+    border-left: 3px solid color-mix(in srgb, var(--global-base-color) 70%, transparent);
+    border-radius: 12px;
+    padding: 1.6rem 1.8rem;
+    margin-bottom: 2rem;
+  }
+  .area-panel__sheet .area-panel__title { margin-top: 0; }
+  /* keep prose to a comfortable measure (~70 characters) */
+  .area-panel__sheet .area-panel__desc,
+  .area-panel__sheet .area-panel__intro { max-width: 68ch; }
+  .area-panel__intro p:last-child { margin-bottom: 0; }
+
+  /* ---------- 2. section headings also need a surface ---------- */
+  .area-panel__pubs-heading,
+  .area-panel__cat-heading,
+  .area-panel__empty {
+    display: inline-block;
+    background: color-mix(in srgb, var(--global-bg-color) 88%, transparent);
+    -webkit-backdrop-filter: blur(14px);
+            backdrop-filter: blur(14px);
+    border-radius: 8px;
+    padding: 0.3em 0.7em;
+  }
+  .area-panel__pubs-heading { margin-top: 0; }
+  .area-panel__cat-heading  { margin-top: 1.5em; }
+
+  /* ---------- 3. darker publication cards ---------- */
+  /* Scoped to research so Talks/Teaching keep the lighter, more
+     see-through treatment. Drop the `.area-panel ` prefix on both
+     selectors to darken cards site-wide instead. */
+  .area-panel .archive__item {
+    background: color-mix(in srgb, var(--global-bg-color) 88%, transparent);
+    -webkit-backdrop-filter: blur(14px);
+            backdrop-filter: blur(14px);
+    border-color: color-mix(in srgb, var(--global-text-color) 16%, transparent);
+  }
+
+  /* ---------- 4. dim the busiest backdrop ---------- */
+  /* Turing fills every pixel with colour, unlike the line-based scenes,
+     so it needs to sit further back to keep text crisp. */
+  .bg-scene[data-scene="turing"] { opacity: 0.28; }
+  @media (max-width: 640px) {
+    .bg-scene[data-scene="turing"] { opacity: 0.20; }
+  }
 </style>
 
 <!-- end custom head snippets -->
