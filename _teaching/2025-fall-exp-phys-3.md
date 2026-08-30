@@ -11,11 +11,11 @@ location: "Edinburgh, Scotland"
 
 From September to December 2025, I demonstrated the course Experimental Physics 3 to third-year physics students. Among my responsibilities were grading laboratory reports, assisting students with their experiments and teaching them good experimental practices.
 
-Heading 1
-======
+#Heading 1
+#======
 
-Heading 2
-======
+#Heading 2
+#======
 
-Heading 3
-======
+#Heading 3
+#======
