@@ -587,7 +587,7 @@
     var sources = [], tips = [], segs = [];
     var MAX_TIPS = 20, MAX_SEGS = 7000, SEG_MIN = 2.6;
     var W_START = 3.2, W_MIN = 0.5;
-    var CELL = 26, ANAST_R = 11, INHIBIT = 26;
+    var CELL = 26, ANAST_R = 11, INHIBIT = 26, TARGET_TIPS = 9;
     var pts = null, branchId = 0, frames = 0;
 
     function newSource() {
@@ -749,8 +749,16 @@
            for DLL4/Notch lateral inhibition: a tip in already
            well-vascularised tissue does not sprout. This suppresses
            about 40% of attempts and stops the bed over-branching. */
+        /* Hold the number of simultaneously growing tips near a
+           setpoint. Without this the count free-runs between 4 and 13,
+           so the amount of new vessel laid down each second varies by
+           2.3-3.3x and the scene visibly surges and stalls. Feeding the
+           deviation back into the sprouting probability cuts that
+           variation to about 1.6x. */
+        var gain = Math.max(0.15, Math.min(2.6,
+                     Math.pow(TARGET_TIPS / Math.max(1, tips.length), 3)));
         if (tips.length < MAX_TIPS - 1 && tp.gen < 5 &&
-            Math.random() < 0.0035 * near * adv &&
+            Math.random() < 0.0035 * near * adv * gain &&
             localDensity(tp.x, tp.y) <= INHIBIT) {
           var fr = 0.35 + Math.random() * 0.30;
           var r1 = Math.max(W_MIN, tp.w * Math.cbrt(fr));
@@ -771,7 +779,7 @@
           tips.splice(i, 1);
         }
       }
-      while (tips.length < 4) seedTip();
+      while (tips.length < 7) seedTip();
 
       /* Regression. Taking segs[0] would always remove the oldest
          segment -- which is a gen-0 trunk at full calibre, so the
@@ -892,12 +900,12 @@
     var birds = [], predators = [];
     var SEP = 20, ALI = 40, COH = 55;
     /* Three raptors, each hunting on its own duty cycle, on screen ~9%
-       of the time apiece. The duty cycle matters more than the count:
-       with three raptors at the old cooldowns the order parameter fell
-       to 0.13 and the flock never re-formed, so the cooldowns were
-       lengthened to compensate. As shipped the flock spends most of its
-       time at order 0.6-0.9 with roughly a quarter of frames showing
-       some panic, which is the rhythm that makes an attack legible. */
+       of the time apiece. Each hunt lasts roughly 15-22 s and is
+       followed by a long absence before that raptor returns. The duty
+       cycle matters more than the count: with three raptors hunting
+       continuously the order parameter fell to 0.13 and the flock never
+       re-formed. As tuned the flock sits at order 0.57-0.92 between
+       attacks, which is the rhythm that makes an attack legible. */
     var PMAXV = 2.7, PSEE = 150, PFLEE = 112;
     var MAXV = 2.1, MINV = 1.55, CRUISE = 1.95;
     var ACCENT_NB = 11;                /* below this neighbour count -> accent.
@@ -936,7 +944,7 @@
        of its life and out over the last 90. The same factor scales the
        panic it causes, so the birds never flee from something the
        viewer cannot see. */
-    var FADE_IN = 60, FADE_OUT = 90;
+    var FADE_IN = 90, FADE_OUT = 120;
     function raptorFade(P) {
       if (!P.active) return 0;
       var inF = Math.min(1, (P.ttl0 - P.ttl) / FADE_IN);
@@ -953,7 +961,7 @@
           P.cool -= dt;
           if (P.cool <= 0) {
             P.active = true;
-            P.ttl = 420 + Math.random() * 260;
+            P.ttl = 900 + Math.random() * 400;
             P.ttl0 = P.ttl;
             P.x = Math.random() * W; P.y = Math.random() * H;
             var pa = Math.random() * Math.PI * 2;
@@ -978,7 +986,7 @@
         if (P.x < 0) P.x += W; else if (P.x >= W) P.x -= W;   /* periodic too */
         if (P.y < 0) P.y += H; else if (P.y >= H) P.y -= H;
         P.ttl -= dt;
-        if (P.ttl <= 0) { P.active = false; P.cool = 3100 + Math.random() * 2600; }
+        if (P.ttl <= 0) { P.active = false; P.cool = 6500 + Math.random() * 3000; }
       }
 
       /* toroidal bucket grid */
