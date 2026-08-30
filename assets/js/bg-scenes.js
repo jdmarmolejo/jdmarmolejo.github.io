@@ -557,56 +557,73 @@
      angio — sprouting angiogenesis
 
      Hypoxic sites release VEGF. Tip cells migrate up the gradient
-     (chemotaxis, modelled as a reinforced random walk: heading is a
-     weighted blend of persistence, gradient direction and noise) and
-     drag a vessel behind them. Sprouts branch, each generation thinner
-     than its parent. When a tip reaches its source the site is
-     perfused and a new hypoxic region appears elsewhere. Old vessel
-     segments are pruned, so the network keeps remodelling.
+     (chemotaxis, modelled as a reinforced random walk: heading blends
+     persistence, gradient direction and noise) and drag a vessel
+     behind them. Sprouts branch, each generation thinner than its
+     parent. When a tip reaches its source the site is perfused and a
+     new hypoxic region appears elsewhere. Old segments are pruned, so
+     the network keeps remodelling.
+
+     v4 fixes: segments were previously emitted once per frame, each
+     only ~0.3 px long, so the 1500-segment cap held barely 2.5 s of
+     history -- the result read as swimming tadpoles, not vessels.
+     Segments are now emitted per SEG_MIN px travelled and the cap is
+     far higher, giving ~14,000 px of persistent network. Targets are
+     also chosen as "usually nearest, sometimes random", which stops
+     every tip converging on one point and keeps the network spread
+     across ~80% of the viewport.
      =================================================================== */
   function initAngio() {
     var sources = [], tips = [], segs = [];
-    var MAX_TIPS = 22, MAX_SEGS = 1500;
+    var MAX_TIPS = 18, MAX_SEGS = 5000, SEG_MIN = 2.5;
     var W_START = 2.8, W_MIN = 0.55, W_DECAY = 0.74;
 
     function newSource() {
       return {
-        x: 0.08 * W + Math.random() * 0.84 * W,
-        y: 0.08 * H + Math.random() * 0.84 * H,
+        x: 0.06 * W + Math.random() * 0.88 * W,
+        y: 0.06 * H + Math.random() * 0.88 * H,
         phase: Math.random() * Math.PI * 2,
         perfused: 0,
       };
     }
-    function nearestSource(x, y) {
-      var best = -1, bd = Infinity;
-      for (var i = 0; i < sources.length; i++) {
-        if (sources[i].perfused > 0) continue;
-        var dx = sources[i].x - x, dy = sources[i].y - y;
-        var d = dx * dx + dy * dy;
-        if (d < bd) { bd = d; best = i; }
+    function pickTarget(x, y) {
+      var avail = [], i;
+      for (i = 0; i < sources.length; i++) {
+        if (sources[i].perfused <= 0) avail.push(i);
       }
-      return best;
+      if (!avail.length) return -1;
+      if (Math.random() < 0.55) {          /* usually the nearest ... */
+        var best = avail[0], bd = Infinity;
+        for (i = 0; i < avail.length; i++) {
+          var dx = sources[avail[i]].x - x, dy = sources[avail[i]].y - y;
+          var d = dx * dx + dy * dy;
+          if (d < bd) { bd = d; best = avail[i]; }
+        }
+        return best;
+      }
+      return avail[(Math.random() * avail.length) | 0];   /* ... sometimes not */
     }
     function newTip(x, y, ang, w, gen) {
       return {
         x: x, y: y, ang: ang, w: w, gen: gen,
-        target: nearestSource(x, y),
-        age: 0, maxAge: 900 + Math.random() * 700,
+        target: pickTarget(x, y),
+        age: 0, maxAge: 2600 + Math.random() * 1600,
+        lx: x, ly: y,
       };
     }
     function seedTip() {
       var edge = (Math.random() * 4) | 0, x, y, ang;
-      if (edge === 0)      { x = Math.random() * W; y = -8;     ang =  Math.PI / 2; }
-      else if (edge === 1) { x = W + 8; y = Math.random() * H;  ang =  Math.PI; }
-      else if (edge === 2) { x = Math.random() * W; y = H + 8;  ang = -Math.PI / 2; }
-      else                 { x = -8;    y = Math.random() * H;  ang =  0; }
+      if (edge === 0)      { x = Math.random() * W; y = -8;    ang =  Math.PI / 2; }
+      else if (edge === 1) { x = W + 8; y = Math.random() * H; ang =  Math.PI; }
+      else if (edge === 2) { x = Math.random() * W; y = H + 8; ang = -Math.PI / 2; }
+      else                 { x = -8;    y = Math.random() * H; ang =  0; }
       tips.push(newTip(x, y, ang, W_START, 0));
     }
     function reset() {
       sources = []; tips = []; segs = [];
-      var ns = Math.max(3, Math.min(6, Math.round(W / 460)));
+      var ns = Math.max(4, Math.min(8, Math.round(W / 300)));
       for (var i = 0; i < ns; i++) sources.push(newSource());
-      for (var j = 0; j < 3; j++) seedTip();
+      for (var j = 0; j < 4; j++) seedTip();
     }
     reset();
     onResize = reset;
@@ -624,73 +641,71 @@
         var tp = tips[i];
 
         if (tp.target < 0 || !sources[tp.target] || sources[tp.target].perfused > 0) {
-          tp.target = nearestSource(tp.x, tp.y);
+          tp.target = pickTarget(tp.x, tp.y);
         }
-
-        /* chemotaxis: steer toward the VEGF source, with persistence + noise */
         if (tp.target >= 0) {
           var src = sources[tp.target];
-          var want = Math.atan2(src.y - tp.y, src.x - tp.x);
-          var diff = wrapAngle(want - tp.ang);
-          tp.ang += diff * 0.035 * adv;
+          var diff = wrapAngle(Math.atan2(src.y - tp.y, src.x - tp.x) - tp.ang);
+          tp.ang += diff * 0.045 * adv;
         }
-        tp.ang += (Math.random() - 0.5) * 0.22 * adv;
+        tp.ang += (Math.random() - 0.5) * 0.09 * adv;
 
-        var sp = 0.62 + tp.gen * 0.05;
-        var nx = tp.x + Math.cos(tp.ang) * sp * adv;
-        var ny = tp.y + Math.sin(tp.ang) * sp * adv;
+        var sp = 0.9 + tp.gen * 0.05;
+        tp.x += Math.cos(tp.ang) * sp * adv;
+        tp.y += Math.sin(tp.ang) * sp * adv;
+        tp.age += adv;
 
-        var bucket = Math.max(0, Math.min(3, Math.round((tp.w - W_MIN) / 0.75)));
-        segs.push(tp.x, tp.y, nx, ny, bucket);
-        tp.x = nx; tp.y = ny; tp.age += adv;
+        /* emit a vessel segment per SEG_MIN px travelled, not per frame */
+        var dx2 = tp.x - tp.lx, dy2 = tp.y - tp.ly;
+        if (dx2 * dx2 + dy2 * dy2 >= SEG_MIN * SEG_MIN) {
+          var bucket = Math.max(0, Math.min(3, Math.round((tp.w - W_MIN) / 0.75)));
+          segs.push(tp.lx, tp.ly, tp.x, tp.y, bucket);
+          tp.lx = tp.x; tp.ly = tp.y;
+        }
 
-        /* sprouting: more likely close to a source, and capped by generation */
         var near = 1;
         if (tp.target >= 0) {
-          var sd = Math.hypot(sources[tp.target].x - tp.x, sources[tp.target].y - tp.y);
-          near = sd < Math.min(W, H) * 0.22 ? 2.4 : 1;
-          if (sd < 16) {                       /* perfused */
-            sources[tp.target].perfused = 1;
+          var so2 = sources[tp.target];
+          var sd = Math.sqrt((so2.x - tp.x) * (so2.x - tp.x) + (so2.y - tp.y) * (so2.y - tp.y));
+          near = sd < Math.min(W, H) * 0.22 ? 2.2 : 1;
+          if (sd < 18) {                       /* perfused: relocate the site */
             sources[tp.target] = newSource();
-            sources[tp.target].perfused = 0;
-            tp.target = nearestSource(tp.x, tp.y);
+            tp.target = pickTarget(tp.x, tp.y);
           }
         }
         if (tips.length < MAX_TIPS && tp.gen < 4 &&
-            Math.random() < 0.0045 * near * adv) {
-          var cw = Math.max(W_MIN, tp.w * W_DECAY);
+            Math.random() < 0.004 * near * adv) {
           tips.push(newTip(tp.x, tp.y,
-            tp.ang + (Math.random() < 0.5 ? 0.75 : -0.75), cw, tp.gen + 1));
+            tp.ang + (Math.random() < 0.5 ? 0.75 : -0.75),
+            Math.max(W_MIN, tp.w * W_DECAY), tp.gen + 1));
           tp.w = Math.max(W_MIN, tp.w * 0.94);
         }
 
         var out = tp.x < -70 || tp.x > W + 70 || tp.y < -70 || tp.y > H + 70;
         if (tp.age > tp.maxAge || out) tips.splice(i, 1);
       }
-      while (tips.length < 3) seedTip();
-      while (segs.length > MAX_SEGS * 5) segs.splice(0, 5);   /* vessel regression */
+      while (tips.length < 4) seedTip();
+      while (segs.length > MAX_SEGS * 5) segs.splice(0, 5);   /* regression */
 
       ctx.clearRect(0, 0, W, H);
 
-      /* hypoxic sites */
       for (var s = 0; s < sources.length; s++) {
         var so = sources[s];
         var pulse = 0.5 + 0.5 * Math.sin(t * 0.02 + so.phase);
         var rad = 34 + pulse * 12;
         var g = ctx.createRadialGradient(so.x, so.y, 0, so.x, so.y, rad);
-        g.addColorStop(0, withAlpha(palette.b, 0.16 + pulse * 0.07));
+        g.addColorStop(0, withAlpha(palette.b, 0.14 + pulse * 0.06));
         g.addColorStop(1, withAlpha(palette.b, 0));
         ctx.fillStyle = g;
         ctx.beginPath(); ctx.arc(so.x, so.y, rad, 0, Math.PI * 2); ctx.fill();
       }
 
-      /* vessels, batched by calibre so thickness varies without a
-         stroke call per segment */
+      /* vessels, batched by calibre */
       var widths = [0.7, 1.3, 2.0, 2.8];
+      ctx.lineCap = "round";
       for (var b = 0; b < 4; b++) {
         ctx.lineWidth = widths[b];
-        ctx.lineCap = "round";
-        ctx.strokeStyle = withAlpha(palette.a, 0.16 + b * 0.05);
+        ctx.strokeStyle = withAlpha(palette.a, 0.15 + b * 0.05);
         ctx.beginPath();
         for (var q = 0; q < segs.length; q += 5) {
           if (segs[q + 4] !== b) continue;
@@ -700,16 +715,16 @@
         ctx.stroke();
       }
 
-      /* tip cells */
+      /* tip cells (small, so they read as growing fronts not organisms) */
       for (var k = 0; k < tips.length; k++) {
         var tq = tips[k];
-        var gg = ctx.createRadialGradient(tq.x, tq.y, 0, tq.x, tq.y, 8);
-        gg.addColorStop(0, withAlpha(palette.a, 0.45));
+        var gg = ctx.createRadialGradient(tq.x, tq.y, 0, tq.x, tq.y, 5.5);
+        gg.addColorStop(0, withAlpha(palette.a, 0.32));
         gg.addColorStop(1, withAlpha(palette.a, 0));
         ctx.fillStyle = gg;
-        ctx.beginPath(); ctx.arc(tq.x, tq.y, 8, 0, Math.PI * 2); ctx.fill();
-        ctx.fillStyle = withAlpha(palette.a, 0.7);
-        ctx.beginPath(); ctx.arc(tq.x, tq.y, 1.6, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(tq.x, tq.y, 5.5, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = withAlpha(palette.a, 0.6);
+        ctx.beginPath(); ctx.arc(tq.x, tq.y, 1.4, 0, Math.PI * 2); ctx.fill();
       }
     };
   }
