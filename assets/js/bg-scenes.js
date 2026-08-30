@@ -830,8 +830,14 @@
      and opacity, which gives the field some thickness.
      =================================================================== */
   function initMurmuration() {
-    var birds = [], predator = null;
+    var birds = [], predators = [];
     var SEP = 20, ALI = 40, COH = 55;
+    /* Two raptors, each hunting on its own duty cycle. They are on
+       screen ~14% of the time apiece: with them present constantly the
+       order parameter collapses from 0.84 to about 0.12 and the flock
+       never re-forms, so the calm stretches between attacks are what
+       make the attacks legible. */
+    var PMAXV = 2.7, PSEE = 150, PFLEE = 112;
     var MAXV = 2.1, MINV = 1.55, CRUISE = 1.95;
     var ACCENT_NB = 11;                /* below this neighbour count -> accent.
                                           11 tints ~35% of the flock; raise it
@@ -852,7 +858,11 @@
       }
       gxn = Math.max(1, Math.ceil(W / CELL));
       gyn = Math.max(1, Math.ceil(H / CELL));
-      predator = { x: -200, y: H / 2, vx: 2.2, vy: 0, active: false };
+      /* staggered initial cooldowns so they rarely arrive together */
+      predators = [
+        { x: 0, y: 0, vx: 0, vy: 0, active: false, ttl: 0, cool: 300 },
+        { x: 0, y: 0, vx: 0, vy: 0, active: false, ttl: 0, cool: 2600 },
+      ];
     }
     reset();
 
@@ -861,16 +871,37 @@
     step = function (dt, silent) {
       var adv = dt * speed, i;
 
-      if (!predator.active && Math.random() < 0.0012 * adv) {
-        predator.active = true;
-        predator.x = -60; predator.y = Math.random() * H;
-        var pa = (Math.random() - 0.5) * 0.6;
-        predator.vx = Math.cos(pa) * 2.2; predator.vy = Math.sin(pa) * 2.2;
-      }
-      if (predator.active) {
-        predator.x += predator.vx * adv;
-        predator.y += predator.vy * adv;
-        if (predator.x > W + 80) predator.active = false;
+      for (var pi = 0; pi < predators.length; pi++) {
+        var P = predators[pi];
+        if (!P.active) {
+          P.cool -= dt;
+          if (P.cool <= 0) {
+            P.active = true;
+            P.ttl = 420 + Math.random() * 260;
+            P.x = Math.random() * W; P.y = Math.random() * H;
+            var pa = Math.random() * Math.PI * 2;
+            P.vx = Math.cos(pa) * PMAXV; P.vy = Math.sin(pa) * PMAXV;
+          }
+          continue;
+        }
+        /* drift toward the local centre of the flock -- a hunt, not a
+           straight line through the field */
+        var mx = 0, my = 0, seen = 0;
+        for (var bi = 0; bi < birds.length; bi++) {
+          var bq = birds[bi];
+          var qx = wrapD(bq.x - P.x, W), qy = wrapD(bq.y - P.y, H);
+          if (qx * qx + qy * qy < PSEE * PSEE) { mx += qx; my += qy; seen++; }
+        }
+        if (seen) { P.vx += (mx / seen) * 0.0010; P.vy += (my / seen) * 0.0010; }
+        P.vx += (Math.random() - 0.5) * 0.10;
+        P.vy += (Math.random() - 0.5) * 0.10;
+        var psp = Math.sqrt(P.vx * P.vx + P.vy * P.vy) || 1;
+        P.vx = P.vx / psp * PMAXV; P.vy = P.vy / psp * PMAXV;
+        P.x += P.vx * adv; P.y += P.vy * adv;
+        if (P.x < 0) P.x += W; else if (P.x >= W) P.x -= W;   /* periodic too */
+        if (P.y < 0) P.y += H; else if (P.y >= H) P.y -= H;
+        P.ttl -= dt;
+        if (P.ttl <= 0) { P.active = false; P.cool = 1900 + Math.random() * 1800; }
       }
 
       /* toroidal bucket grid */
@@ -911,10 +942,12 @@
         if (na) { p.vx += (avx / na - p.vx) * 0.055; p.vy += (avy / na - p.vy) * 0.055; }
         if (nc) { p.vx += (cx / nc) * 0.0004; p.vy += (cy / nc) * 0.0004; }
 
-        if (predator.active) {
-          var pdx = wrapD(p.x - predator.x, W), pdy = wrapD(p.y - predator.y, H);
+        for (var pk = 0; pk < predators.length; pk++) {
+          var PR = predators[pk];
+          if (!PR.active) continue;
+          var pdx = wrapD(p.x - PR.x, W), pdy = wrapD(p.y - PR.y, H);
           var pd2 = pdx * pdx + pdy * pdy;
-          if (pd2 < 16900) {
+          if (pd2 < PFLEE * PFLEE) {
             var pd = Math.sqrt(pd2) || 1;
             p.vx += (pdx / pd) * 0.95; p.vy += (pdy / pd) * 0.95;
           }
@@ -954,14 +987,16 @@
         ctx.fill();
       }
 
-      if (predator.active) {
-        var pg = ctx.createRadialGradient(predator.x, predator.y, 0, predator.x, predator.y, 26);
+      for (var pd3 = 0; pd3 < predators.length; pd3++) {
+        var PD = predators[pd3];
+        if (!PD.active) continue;
+        var pg = ctx.createRadialGradient(PD.x, PD.y, 0, PD.x, PD.y, 26);
         pg.addColorStop(0, withAlpha(palette.b, 0.22));
         pg.addColorStop(1, withAlpha(palette.b, 0));
         ctx.fillStyle = pg;
-        ctx.beginPath(); ctx.arc(predator.x, predator.y, 26, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(PD.x, PD.y, 26, 0, Math.PI * 2); ctx.fill();
         ctx.fillStyle = withAlpha(palette.b, 0.6);
-        ctx.beginPath(); ctx.arc(predator.x, predator.y, 3.4, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(PD.x, PD.y, 3.4, 0, Math.PI * 2); ctx.fill();
       }
     };
 
