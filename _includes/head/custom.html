@@ -31,17 +31,13 @@
      background on top, so it keeps its dedicated treatment. */
   body {
     background-image:
-      /* faint blueprint grid */
-      linear-gradient(color-mix(in srgb, var(--global-text-color) 7%, transparent) 1px, transparent 1px),
-      linear-gradient(90deg, color-mix(in srgb, var(--global-text-color) 7%, transparent) 1px, transparent 1px),
-      /* brand glows */
+      /* brand glows only -- the blueprint grid layers are gone */
       radial-gradient(1000px 620px at 86% -12%,
         color-mix(in srgb, var(--global-base-color) 26%, transparent), transparent 62%),
       radial-gradient(840px 540px at -14% 112%,
         color-mix(in srgb, var(--global-link-color) 22%, transparent), transparent 62%);
-    background-size: 46px 46px, 46px 46px, auto, auto;
-    background-repeat: repeat, repeat, no-repeat, no-repeat;
-    background-attachment: fixed, fixed, fixed, fixed;
+    background-repeat: no-repeat, no-repeat;
+    background-attachment: fixed, fixed;
   }
 
   /* full-width, centred content (override the theme's sidebar grid) */
@@ -216,7 +212,7 @@
   /* ---------- 4. dim the busiest backdrop ---------- */
   /* Turing fills every pixel with colour, unlike the line-based scenes,
      so it needs to sit further back to keep text crisp. */
-  .bg-scene[data-scene="turing"] { opacity: 0.28; }
+  .bg-scene[data-scene="turing"] { opacity: 0.36; }
   @media (max-width: 640px) {
     .bg-scene[data-scene="turing"] { opacity: 0.20; }
   }
