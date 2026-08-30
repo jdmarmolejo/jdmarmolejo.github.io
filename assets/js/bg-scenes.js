@@ -673,7 +673,7 @@
       return a;
     }
 
-    step = function (dt) {
+    step = function (dt, silent) {
       var adv = dt * speed;
       frames++;
       if (frames % 900 === 0) rebuildIndex();
@@ -744,6 +744,8 @@
       while (tips.length < 4) seedTip();
       while (segs.length > MAX_SEGS * 5) segs.splice(0, 5);      /* regression */
 
+      if (silent) return;          /* prewarm pass: advance state, draw nothing */
+
       ctx.clearRect(0, 0, W, H);
 
       /* hypoxic sites */
@@ -793,6 +795,16 @@
         ctx.beginPath(); ctx.arc(tq.x, tq.y, 1.3, 0, Math.PI * 2); ctx.fill();
       }
     };
+
+    /* Prewarm: the growth rate of the network is proportional to the
+       number of tips, which starts at 4 and rises to ~19 as the tree
+       bifurcates. Without this, the scene visibly speeds up over the
+       first half-minute. Advancing the state silently at start-up (and
+       after a resize) means the visitor arrives at an already
+       established, steady-state vascular bed. */
+    function prewarm() { for (var i = 0; i < 1100; i++) step(1, true); }
+    prewarm();
+    onResize = function () { reset(); prewarm(); };
   }
 
   /* ===================================================================
@@ -807,16 +819,22 @@
      =================================================================== */
   function initMurmuration() {
     var birds = [], predator = null;
-    var SEP = 19, ALI = 46, COH = 90, MAXV = 2.1, MINV = 1.0;
+    /* MINV sits close to MAXV on purpose. With a wide band the birds
+       start near MINV and are pushed to the cap by the accumulated
+       steering forces, so the flock measurably doubles its mean speed
+       over the first ~5 s. Starting them at cruise speed and keeping
+       the band narrow holds the pace flat from the first frame. */
+    var SEP = 19, ALI = 46, COH = 90, MAXV = 2.1, MINV = 1.55, CRUISE = 1.95;
     var CELL = 70, gw = 1, gh = 1;
 
     function reset() {
-      var n = Math.max(90, Math.min(280, Math.round((W * H) / 4400)));
+      var n = Math.max(120, Math.min(420, Math.round((W * H) / 3100)));
       birds = [];
       for (var i = 0; i < n; i++) {
+        var a0 = Math.random() * Math.PI * 2;
         birds.push({
           x: Math.random() * W, y: Math.random() * H,
-          vx: (Math.random() - 0.5) * 2, vy: (Math.random() - 0.5) * 2,
+          vx: Math.cos(a0) * CRUISE, vy: Math.sin(a0) * CRUISE,
         });
       }
       gw = Math.ceil(W / CELL) + 3;
@@ -824,9 +842,8 @@
       predator = { x: -200, y: H / 2, vx: 2.2, vy: 0, active: false };
     }
     reset();
-    onResize = reset;
 
-    step = function (dt) {
+    step = function (dt, silent) {
       var adv = dt * speed;
 
       var ax = W / 2 + Math.cos(t * 0.0035) * W * 0.30;
@@ -893,18 +910,25 @@
         p.x += p.vx * adv; p.y += p.vy * adv;
       }
 
+      if (silent) return;
+
       ctx.clearRect(0, 0, W, H);
-      for (i = 0; i < birds.length; i++) {
-        var bd = birds[i];
-        var sp2 = Math.sqrt(bd.vx * bd.vx + bd.vy * bd.vy) || 1;
-        var ux = bd.vx / sp2, uy = bd.vy / sp2;
-        var L = 4.2, Wd = 1.5;
-        ctx.fillStyle = withAlpha(i % 9 === 0 ? palette.a : palette.text, 0.42);
+      /* two batched paths (body colour + accent) rather than a fill per
+         bird, so raising the flock size stays cheap */
+      var L = 5.4, Wd = 2.0;
+      for (var pass = 0; pass < 2; pass++) {
+        ctx.fillStyle = withAlpha(pass === 0 ? palette.text : palette.a, 0.46);
         ctx.beginPath();
-        ctx.moveTo(bd.x + ux * L, bd.y + uy * L);
-        ctx.lineTo(bd.x - ux * L * 0.5 - uy * Wd, bd.y - uy * L * 0.5 + ux * Wd);
-        ctx.lineTo(bd.x - ux * L * 0.5 + uy * Wd, bd.y - uy * L * 0.5 - ux * Wd);
-        ctx.closePath();
+        for (i = 0; i < birds.length; i++) {
+          if ((i % 9 === 0) !== (pass === 1)) continue;
+          var bd = birds[i];
+          var sp2 = Math.sqrt(bd.vx * bd.vx + bd.vy * bd.vy) || 1;
+          var ux = bd.vx / sp2, uy = bd.vy / sp2;
+          ctx.moveTo(bd.x + ux * L, bd.y + uy * L);
+          ctx.lineTo(bd.x - ux * L * 0.5 - uy * Wd, bd.y - uy * L * 0.5 + ux * Wd);
+          ctx.lineTo(bd.x - ux * L * 0.5 + uy * Wd, bd.y - uy * L * 0.5 - ux * Wd);
+          ctx.closePath();
+        }
         ctx.fill();
       }
       if (predator.active) {
@@ -914,6 +938,11 @@
         ctx.fill();
       }
     };
+
+    /* let the flock cohere before it is first painted */
+    function prewarm() { for (var i = 0; i < 150; i++) step(1, true); }
+    prewarm();
+    onResize = function () { reset(); prewarm(); };
   }
 
   /* ===================================================================
