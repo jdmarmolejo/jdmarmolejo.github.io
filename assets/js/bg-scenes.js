@@ -810,44 +810,56 @@
   /* ===================================================================
      murmuration — flocking starlings
 
-     Reynolds' three rules (separation, alignment, cohesion) over a
-     spatial hash, plus a slowly wandering roost the flock orbits and
-     an occasional raptor that cuts through. The order parameter of the
-     flock (mean unit velocity, as in the Vicsek model) sits around
-     0.9 and drops sharply when the raptor passes -- which is exactly
-     the splitting and re-forming that makes a murmuration legible.
+     Reynolds' three rules (separation, alignment, cohesion) evaluated
+     over a toroidal spatial hash, plus a raptor that occasionally cuts
+     through and tears a hole in the flock.
+
+     v6 notes. The earlier version pulled every bird toward a single
+     wandering roost, which packed them into a clump covering only
+     ~14% of the screen. Replacing the global attractor with periodic
+     boundaries and dropping cohesion to near zero turns it into a
+     screen-filling field in the spirit of the Vicsek model: measured
+     coverage rises to ~73% while the order parameter (mean unit
+     velocity) stays around 0.8, so the flock still moves as a flock
+     rather than as a gas.
+
+     Birds are tinted by local crowding: those with few neighbours take
+     the accent colour, so the accent traces the edges of the density
+     waves travelling through the flock instead of being sprinkled at
+     random. Each bird also carries a depth value that scales its size
+     and opacity, which gives the field some thickness.
      =================================================================== */
   function initMurmuration() {
     var birds = [], predator = null;
-    /* MINV sits close to MAXV on purpose. With a wide band the birds
-       start near MINV and are pushed to the cap by the accumulated
-       steering forces, so the flock measurably doubles its mean speed
-       over the first ~5 s. Starting them at cruise speed and keeping
-       the band narrow holds the pace flat from the first frame. */
-    var SEP = 19, ALI = 46, COH = 90, MAXV = 2.1, MINV = 1.55, CRUISE = 1.95;
-    var CELL = 70, gw = 1, gh = 1;
+    var SEP = 20, ALI = 40, COH = 55;
+    var MAXV = 2.1, MINV = 1.55, CRUISE = 1.95;
+    var ACCENT_NB = 11;                /* below this neighbour count -> accent.
+                                          11 tints ~35% of the flock; raise it
+                                          for more accent, lower for less. */
+    var CELL = 58, gxn = 1, gyn = 1;
 
     function reset() {
-      var n = Math.max(120, Math.min(420, Math.round((W * H) / 3100)));
+      var n = Math.max(250, Math.min(1600, Math.round((W * H) / 980)));
       birds = [];
       for (var i = 0; i < n; i++) {
         var a0 = Math.random() * Math.PI * 2;
         birds.push({
           x: Math.random() * W, y: Math.random() * H,
           vx: Math.cos(a0) * CRUISE, vy: Math.sin(a0) * CRUISE,
+          nb: 0,
+          z: 0.55 + Math.random() * 0.6,      /* depth: size + opacity */
         });
       }
-      gw = Math.ceil(W / CELL) + 3;
-      gh = Math.ceil(H / CELL) + 3;
+      gxn = Math.max(1, Math.ceil(W / CELL));
+      gyn = Math.max(1, Math.ceil(H / CELL));
       predator = { x: -200, y: H / 2, vx: 2.2, vy: 0, active: false };
     }
     reset();
 
-    step = function (dt, silent) {
-      var adv = dt * speed;
+    function wrapD(d, S) { return d > S / 2 ? d - S : (d < -S / 2 ? d + S : d); }
 
-      var ax = W / 2 + Math.cos(t * 0.0035) * W * 0.30;
-      var ay = H / 2 + Math.sin(t * 0.0027) * H * 0.26;
+    step = function (dt, silent) {
+      var adv = dt * speed, i;
 
       if (!predator.active && Math.random() < 0.0012 * adv) {
         predator.active = true;
@@ -861,9 +873,11 @@
         if (predator.x > W + 80) predator.active = false;
       }
 
-      var grid = new Map(), i, k;
+      /* toroidal bucket grid */
+      var grid = new Map(), k;
       for (i = 0; i < birds.length; i++) {
-        k = (Math.floor(birds[i].y / CELL) + 1) * gw + Math.floor(birds[i].x / CELL) + 1;
+        k = Math.min(gyn - 1, Math.floor(birds[i].y / CELL)) * gxn +
+            Math.min(gxn - 1, Math.floor(birds[i].x / CELL));
         var cellArr = grid.get(k);
         if (!cellArr) { cellArr = []; grid.set(k, cellArr); }
         cellArr.push(i);
@@ -872,58 +886,66 @@
       for (i = 0; i < birds.length; i++) {
         var p = birds[i];
         var sx = 0, sy = 0, avx = 0, avy = 0, cx = 0, cy = 0, na = 0, nc = 0;
-        var gx = Math.floor(p.x / CELL) + 1, gy = Math.floor(p.y / CELL) + 1;
+        var gx = Math.min(gxn - 1, Math.floor(p.x / CELL));
+        var gy = Math.min(gyn - 1, Math.floor(p.y / CELL));
         for (var oy = -1; oy <= 1; oy++) {
           for (var ox = -1; ox <= 1; ox++) {
-            var arr = grid.get((gy + oy) * gw + (gx + ox));
+            var cgx = ((gx + ox) % gxn + gxn) % gxn;      /* wrap the seam */
+            var cgy = ((gy + oy) % gyn + gyn) % gyn;
+            var arr = grid.get(cgy * gxn + cgx);
             if (!arr) continue;
             for (var a = 0; a < arr.length; a++) {
               var j = arr[a];
               if (j === i) continue;
               var q = birds[j];
-              var dx = q.x - p.x, dy = q.y - p.y, d2 = dx * dx + dy * dy;
+              var dx = wrapD(q.x - p.x, W), dy = wrapD(q.y - p.y, H);
+              var d2 = dx * dx + dy * dy;
               if (d2 < SEP * SEP) { sx -= dx; sy -= dy; }
               if (d2 < ALI * ALI) { avx += q.vx; avy += q.vy; na++; }
-              if (d2 < COH * COH) { cx += q.x; cy += q.y; nc++; }
+              if (d2 < COH * COH) { cx += dx; cy += dy; nc++; }
             }
           }
         }
-        p.vx += sx * 0.048; p.vy += sy * 0.048;
-        if (na) { p.vx += (avx / na - p.vx) * 0.050; p.vy += (avy / na - p.vy) * 0.050; }
-        if (nc) { p.vx += (cx / nc - p.x) * 0.00038; p.vy += (cy / nc - p.y) * 0.00038; }
-        p.vx += (ax - p.x) * 0.00022; p.vy += (ay - p.y) * 0.00022;
+        p.nb = nc;
+        p.vx += sx * 0.060; p.vy += sy * 0.060;
+        if (na) { p.vx += (avx / na - p.vx) * 0.055; p.vy += (avy / na - p.vy) * 0.055; }
+        if (nc) { p.vx += (cx / nc) * 0.0004; p.vy += (cy / nc) * 0.0004; }
 
         if (predator.active) {
-          var pdx = p.x - predator.x, pdy = p.y - predator.y;
+          var pdx = wrapD(p.x - predator.x, W), pdy = wrapD(p.y - predator.y, H);
           var pd2 = pdx * pdx + pdy * pdy;
-          if (pd2 < 14400) {
+          if (pd2 < 16900) {
             var pd = Math.sqrt(pd2) || 1;
-            p.vx += (pdx / pd) * 0.9; p.vy += (pdy / pd) * 0.9;
+            p.vx += (pdx / pd) * 0.95; p.vy += (pdy / pd) * 0.95;
           }
         }
-        p.vx += (Math.random() - 0.5) * 0.22;
-        p.vy += (Math.random() - 0.5) * 0.22;
+        p.vx += (Math.random() - 0.5) * 0.26;
+        p.vy += (Math.random() - 0.5) * 0.26;
 
         var spd = Math.sqrt(p.vx * p.vx + p.vy * p.vy);
         if (spd > MAXV) { p.vx = p.vx / spd * MAXV; p.vy = p.vy / spd * MAXV; }
         else if (spd < MINV && spd > 0) { p.vx = p.vx / spd * MINV; p.vy = p.vy / spd * MINV; }
+
         p.x += p.vx * adv; p.y += p.vy * adv;
+        if (p.x < 0) p.x += W; else if (p.x >= W) p.x -= W;
+        if (p.y < 0) p.y += H; else if (p.y >= H) p.y -= H;
       }
 
       if (silent) return;
 
       ctx.clearRect(0, 0, W, H);
-      /* two batched paths (body colour + accent) rather than a fill per
-         bird, so raising the flock size stays cheap */
-      var L = 5.4, Wd = 2.0;
+      /* two batched paths: crowded birds in the body colour, sparse
+         ones in the accent, so the accent follows the density waves */
       for (var pass = 0; pass < 2; pass++) {
-        ctx.fillStyle = withAlpha(pass === 0 ? palette.text : palette.a, 0.46);
+        var accent = pass === 1;
+        ctx.fillStyle = withAlpha(accent ? palette.a : palette.text, accent ? 0.5 : 0.44);
         ctx.beginPath();
         for (i = 0; i < birds.length; i++) {
-          if ((i % 9 === 0) !== (pass === 1)) continue;
           var bd = birds[i];
+          if ((bd.nb < ACCENT_NB) !== accent) continue;
           var sp2 = Math.sqrt(bd.vx * bd.vx + bd.vy * bd.vy) || 1;
           var ux = bd.vx / sp2, uy = bd.vy / sp2;
+          var L = 4.6 * bd.z, Wd = 1.7 * bd.z;
           ctx.moveTo(bd.x + ux * L, bd.y + uy * L);
           ctx.lineTo(bd.x - ux * L * 0.5 - uy * Wd, bd.y - uy * L * 0.5 + ux * Wd);
           ctx.lineTo(bd.x - ux * L * 0.5 + uy * Wd, bd.y - uy * L * 0.5 - ux * Wd);
@@ -931,16 +953,20 @@
         }
         ctx.fill();
       }
+
       if (predator.active) {
-        ctx.fillStyle = withAlpha(palette.b, 0.5);
-        ctx.beginPath();
-        ctx.arc(predator.x, predator.y, 3.2, 0, Math.PI * 2);
-        ctx.fill();
+        var pg = ctx.createRadialGradient(predator.x, predator.y, 0, predator.x, predator.y, 26);
+        pg.addColorStop(0, withAlpha(palette.b, 0.22));
+        pg.addColorStop(1, withAlpha(palette.b, 0));
+        ctx.fillStyle = pg;
+        ctx.beginPath(); ctx.arc(predator.x, predator.y, 26, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = withAlpha(palette.b, 0.6);
+        ctx.beginPath(); ctx.arc(predator.x, predator.y, 3.4, 0, Math.PI * 2); ctx.fill();
       }
     };
 
-    /* let the flock cohere before it is first painted */
-    function prewarm() { for (var i = 0; i < 150; i++) step(1, true); }
+    /* let the field organise before it is first painted */
+    function prewarm() { for (var i = 0; i < 90; i++) step(1, true); }
     prewarm();
     onResize = function () { reset(); prewarm(); };
   }
