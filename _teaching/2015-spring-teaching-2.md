@@ -9,7 +9,6 @@ location: "Edinburgh, Scotland"
 ---
 
 Taught during January to April 2025, and again January to April 2026.
-======
 
 I demonstrated the course Physics 2 to second-year physics students. Among my responsibilities were grading laboratory reports, assisting students with their experiments and teaching them good experimental practices.
 
