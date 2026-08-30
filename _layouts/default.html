@@ -13,6 +13,10 @@ layout: compress
 
   <body>
 
+    {% if page.bg_scene %}
+      <canvas id="bg-scene" class="bg-scene" data-scene="{{ page.bg_scene }}" aria-hidden="true"></canvas>
+    {% endif %}
+
     {% include browser-upgrade.html %}
     {% include masthead.html %}
 
@@ -26,6 +30,10 @@ layout: compress
     </div>
 
     {% include scripts.html %}
+
+    {% if page.bg_scene %}
+      <script defer src="{{ base_path }}/assets/js/bg-scenes.js"></script>
+    {% endif %}
 
   </body>
 </html>
