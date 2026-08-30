@@ -266,6 +266,7 @@ defaults:
       author_profile: true
       share: true
       comments: true
+      bg_scene: voronoi
   # _publications
   - scope:
       path: ""
@@ -275,6 +276,7 @@ defaults:
       author_profile: true
       share: true
       comments: true
+      bg_scene: turing
   # _portfolio
   - scope:
       path: ""
@@ -292,6 +294,7 @@ defaults:
       layout: talk
       author_profile: true
       share: true
+      bg_scene: angio
 
 
 # Sass/SCSS
