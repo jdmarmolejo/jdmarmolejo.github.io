@@ -3,6 +3,7 @@ title: "Experimental Physics 2"
 collection: teaching
 type: "Undergraduate course"
 permalink: /teaching/2015-spring-teaching-1
+excerpt: "Demonstrated Physics 2 to second-year students, grading lab reports and assisting with experiments."
 venue: "University of Edinburgh, Department of Physics"
 date: 2025-01-01
 location: "Edinburgh, Scotland"
