@@ -579,7 +579,7 @@
      =================================================================== */
   function initAngio() {
     var sources = [], tips = [], segs = [];
-    var MAX_TIPS = 20, MAX_SEGS = 5200, SEG_MIN = 2.6;
+    var MAX_TIPS = 20, MAX_SEGS = 7000, SEG_MIN = 2.6;
     var W_START = 3.2, W_MIN = 0.5;
     var CELL = 26, ANAST_R = 11;
     var pts = null, branchId = 0, frames = 0;
@@ -742,7 +742,25 @@
         }
       }
       while (tips.length < 4) seedTip();
-      while (segs.length > MAX_SEGS * 5) segs.splice(0, 5);      /* regression */
+
+      /* Regression. Taking segs[0] would always remove the oldest
+         segment -- which is a gen-0 trunk at full calibre, so the
+         thickest vessels would vanish first while capillaries lingered.
+         Real beds regress the other way round: unperfused capillaries
+         are resorbed and the trunks persist. So look at a window of the
+         oldest segments and drop the thinnest one in it. */
+      while (segs.length > MAX_SEGS * 5) {
+        /* the window has to be wide enough to actually contain a mix of
+           calibres: at 60 segments the candidates are all from the same
+           moment and the bias vanishes (measured kept/removed ratio
+           1.02, i.e. no effect). At 2000 it is about 1.3. */
+        var win = Math.min(2000 * 5, segs.length);
+        var thin = 0, thinW = Infinity;
+        for (var wq = 0; wq < win; wq += 5) {
+          if (segs[wq + 4] < thinW) { thinW = segs[wq + 4]; thin = wq; }
+        }
+        segs.splice(thin, 5);
+      }
 
       if (silent) return;          /* prewarm pass: advance state, draw nothing */
 
@@ -760,26 +778,37 @@
         ctx.beginPath(); ctx.arc(so.x, so.y, rad, 0, Math.PI * 2); ctx.fill();
       }
 
-      /* vessels: 8 calibre buckets, each drawn as a soft halo + core so
-         they read as tubes. Bucketing keeps this to a handful of strokes. */
+      /* Vessels: 8 calibre buckets x 3 age tiers, each drawn as a soft
+         halo plus a core so they read as tubes. The age tiers exist so
+         that segments about to be pruned dim out first -- without them
+         a vessel simply blinks out of existence, which is what makes
+         the regression read as a glitch rather than as remodelling. */
       var NB = 8, bw = (W_START - W_MIN) / (NB - 1);
+      var cutA = Math.floor(segs.length * 0.10 / 5) * 5;
+      var cutB = Math.floor(segs.length * 0.24 / 5) * 5;
+      var tierAlpha = [0.28, 0.62, 1];
       ctx.lineCap = "round";
       ctx.lineJoin = "round";
       for (var pass = 0; pass < 2; pass++) {
         for (var b = 0; b < NB; b++) {
           var wpx = W_MIN + b * bw;
-          ctx.lineWidth = pass === 0 ? wpx + 2.2 : wpx;
-          ctx.strokeStyle = withAlpha(palette.a, pass === 0 ? 0.045 : 0.13 + b * 0.022);
-          ctx.beginPath();
-          var drew = false;
-          for (var q = 0; q < segs.length; q += 5) {
-            var bi = Math.max(0, Math.min(NB - 1, Math.round((segs[q + 4] - W_MIN) / bw)));
-            if (bi !== b) continue;
-            ctx.moveTo(segs[q], segs[q + 1]);
-            ctx.lineTo(segs[q + 2], segs[q + 3]);
-            drew = true;
+          var baseA = pass === 0 ? 0.045 : 0.13 + b * 0.022;
+          for (var tier = 0; tier < 3; tier++) {
+            ctx.lineWidth = pass === 0 ? wpx + 2.2 : wpx;
+            ctx.strokeStyle = withAlpha(palette.a, baseA * tierAlpha[tier]);
+            ctx.beginPath();
+            var drew = false;
+            for (var q = 0; q < segs.length; q += 5) {
+              var tq2 = q < cutA ? 0 : (q < cutB ? 1 : 2);
+              if (tq2 !== tier) continue;
+              var bi = Math.max(0, Math.min(NB - 1, Math.round((segs[q + 4] - W_MIN) / bw)));
+              if (bi !== b) continue;
+              ctx.moveTo(segs[q], segs[q + 1]);
+              ctx.lineTo(segs[q + 2], segs[q + 3]);
+              drew = true;
+            }
+            if (drew) ctx.stroke();
           }
-          if (drew) ctx.stroke();
         }
       }
 
