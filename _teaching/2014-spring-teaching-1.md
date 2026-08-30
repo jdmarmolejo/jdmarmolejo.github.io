@@ -11,11 +11,11 @@ location: "Bogotá, Colombia"
 
 In 2023, I taught the course Experimental Physics 1 to first-year science and engineering students. Among my responsibilities were delivering the course, grading laboratory reports, designing assessment activities, and assisting students with their experiments.
 
-Heading 1
-======
+#Heading 1
+#======
 
-Heading 2
-======
+#Heading 2
+#======
 
-Heading 3
-======
+#Heading 3
+#======
