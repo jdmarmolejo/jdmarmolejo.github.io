@@ -22,9 +22,10 @@
      growth    : branching filaments — mycelium / neurite growth, i.e.
                  a spatial branching process.
      angio     : sprouting angiogenesis — tip cells climbing a VEGF
-                 gradient (chemotaxis as a reinforced random walk),
-                 laying down vessels that branch, thin with each
-                 generation, and regress when they go unperfused.
+                 gradient, bifurcating under Murray's law and fusing
+                 by anastomosis into a looped vascular bed.
+     murmuration : flocking starlings — Reynolds/Vicsek collective
+                 motion, with a raptor that splits the flock.
      signal    : scrolling Ornstein-Uhlenbeck traces — noisy signals
                  over time.
 
@@ -42,6 +43,7 @@
     phase:     0.55,
     growth:    0.45,
     angio:     0.50,
+    murmuration: 0.60,
     signal:    0.35,
   };
 
@@ -556,27 +558,31 @@
   /* ===================================================================
      angio — sprouting angiogenesis
 
-     Hypoxic sites release VEGF. Tip cells migrate up the gradient
-     (chemotaxis, modelled as a reinforced random walk: heading blends
-     persistence, gradient direction and noise) and drag a vessel
-     behind them. Sprouts branch, each generation thinner than its
-     parent. When a tip reaches its source the site is perfused and a
-     new hypoxic region appears elsewhere. Old segments are pruned, so
-     the network keeps remodelling.
+     Hypoxic sites release VEGF; tip cells migrate up the gradient
+     (chemotaxis as a reinforced random walk with a bounded turn rate)
+     and draw a vessel behind them.
 
-     v4 fixes: segments were previously emitted once per frame, each
-     only ~0.3 px long, so the 1500-segment cap held barely 2.5 s of
-     history -- the result read as swimming tadpoles, not vessels.
-     Segments are now emitted per SEG_MIN px travelled and the cap is
-     far higher, giving ~14,000 px of persistent network. Targets are
-     also chosen as "usually nearest, sometimes random", which stops
-     every tip converging on one point and keeps the network spread
-     across ~80% of the viewport.
+     v5 makes the result read as vasculature rather than as a tree:
+
+       * True bifurcation. A tip does not sprout a side branch and
+         carry on -- it ends, and two daughters continue, giving real
+         Y-junctions.
+       * Murray's law. Daughter calibres satisfy r0^3 = r1^3 + r2^3,
+         the relation that actually governs vascular branching, so the
+         thicknesses look right at every junction.
+       * Anastomosis. Tips that meet another vessel fuse to it, which
+         closes loops. Real vascular beds are loopy; trees are not, and
+         this is the strongest visual cue of the difference.
+       * Taper. Calibre decays slowly along a vessel between junctions,
+         and segments are drawn with a faint wider halo under a core
+         stroke so they read as tubes rather than hairlines.
      =================================================================== */
   function initAngio() {
     var sources = [], tips = [], segs = [];
-    var MAX_TIPS = 18, MAX_SEGS = 5000, SEG_MIN = 2.5;
-    var W_START = 2.8, W_MIN = 0.55, W_DECAY = 0.74;
+    var MAX_TIPS = 20, MAX_SEGS = 5200, SEG_MIN = 2.6;
+    var W_START = 3.2, W_MIN = 0.5;
+    var CELL = 26, ANAST_R = 11;
+    var pts = null, branchId = 0, frames = 0;
 
     function newSource() {
       return {
@@ -592,7 +598,7 @@
         if (sources[i].perfused <= 0) avail.push(i);
       }
       if (!avail.length) return -1;
-      if (Math.random() < 0.55) {          /* usually the nearest ... */
+      if (Math.random() < 0.55) {
         var best = avail[0], bd = Infinity;
         for (i = 0; i < avail.length; i++) {
           var dx = sources[avail[i]].x - x, dy = sources[avail[i]].y - y;
@@ -601,13 +607,13 @@
         }
         return best;
       }
-      return avail[(Math.random() * avail.length) | 0];   /* ... sometimes not */
+      return avail[(Math.random() * avail.length) | 0];
     }
     function newTip(x, y, ang, w, gen) {
       return {
-        x: x, y: y, ang: ang, w: w, gen: gen,
+        x: x, y: y, ang: ang, w: w, gen: gen, id: ++branchId,
         target: pickTarget(x, y),
-        age: 0, maxAge: 2600 + Math.random() * 1600,
+        age: 0, maxAge: 2400 + Math.random() * 1800,
         lx: x, ly: y,
       };
     }
@@ -619,8 +625,41 @@
       else                 { x = -8;    y = Math.random() * H; ang =  0; }
       tips.push(newTip(x, y, ang, W_START, 0));
     }
+
+    /* spatial hash of vessel points, for anastomosis lookups */
+    function pkey(x, y) { return (Math.floor(y / CELL)) * 100000 + Math.floor(x / CELL); }
+    function addPt(x, y, id) {
+      var k = pkey(x, y);
+      var arr = pts.get(k);
+      if (!arr) { arr = []; pts.set(k, arr); }
+      arr.push(x, y, id);
+    }
+    function rebuildIndex() {
+      /* rebuilt periodically so the index cannot grow without bound
+         as old segments are pruned */
+      pts = new Map();
+      for (var q = 0; q < segs.length; q += 5) addPt(segs[q + 2], segs[q + 3], -1);
+    }
+    function findAnastomosis(x, y, id) {
+      var gx = Math.floor(x / CELL), gy = Math.floor(y / CELL);
+      for (var oy = -1; oy <= 1; oy++) {
+        for (var ox = -1; ox <= 1; ox++) {
+          var arr = pts.get((gy + oy) * 100000 + (gx + ox));
+          if (!arr) continue;
+          for (var i = 0; i < arr.length; i += 3) {
+            if (arr[i + 2] === id) continue;
+            var dx = arr[i] - x, dy = arr[i + 1] - y;
+            if (dx * dx + dy * dy < ANAST_R * ANAST_R) {
+              return { x: arr[i], y: arr[i + 1] };
+            }
+          }
+        }
+      }
+      return null;
+    }
+
     function reset() {
-      sources = []; tips = []; segs = [];
+      sources = []; tips = []; segs = []; pts = new Map(); frames = 0;
       var ns = Math.max(4, Math.min(8, Math.round(W / 300)));
       for (var i = 0; i < ns; i++) sources.push(newSource());
       for (var j = 0; j < 4; j++) seedTip();
@@ -636,6 +675,8 @@
 
     step = function (dt) {
       var adv = dt * speed;
+      frames++;
+      if (frames % 900 === 0) rebuildIndex();
 
       for (var i = tips.length - 1; i >= 0; i--) {
         var tp = tips[i];
@@ -646,21 +687,28 @@
         if (tp.target >= 0) {
           var src = sources[tp.target];
           var diff = wrapAngle(Math.atan2(src.y - tp.y, src.x - tp.x) - tp.ang);
-          tp.ang += diff * 0.045 * adv;
+          /* bounded turn rate keeps vessels smoothly curved */
+          tp.ang += Math.max(-0.035, Math.min(0.035, diff * 0.05)) * adv;
         }
-        tp.ang += (Math.random() - 0.5) * 0.09 * adv;
+        tp.ang += (Math.random() - 0.5) * 0.055 * adv;
 
-        var sp = 0.9 + tp.gen * 0.05;
-        tp.x += Math.cos(tp.ang) * sp * adv;
-        tp.y += Math.sin(tp.ang) * sp * adv;
+        tp.x += Math.cos(tp.ang) * 0.95 * adv;
+        tp.y += Math.sin(tp.ang) * 0.95 * adv;
         tp.age += adv;
+        tp.w = Math.max(W_MIN, tp.w * (1 - 0.00035 * adv));      /* taper */
 
-        /* emit a vessel segment per SEG_MIN px travelled, not per frame */
         var dx2 = tp.x - tp.lx, dy2 = tp.y - tp.ly;
         if (dx2 * dx2 + dy2 * dy2 >= SEG_MIN * SEG_MIN) {
-          var bucket = Math.max(0, Math.min(3, Math.round((tp.w - W_MIN) / 0.75)));
-          segs.push(tp.lx, tp.ly, tp.x, tp.y, bucket);
+          segs.push(tp.lx, tp.ly, tp.x, tp.y, tp.w);
+          addPt(tp.x, tp.y, tp.id);
           tp.lx = tp.x; tp.ly = tp.y;
+
+          var hit = findAnastomosis(tp.x, tp.y, tp.id);
+          if (hit && tp.age > 60) {                 /* fuse -> closes a loop */
+            segs.push(tp.x, tp.y, hit.x, hit.y, tp.w);
+            tips.splice(i, 1);
+            continue;
+          }
         }
 
         var near = 1;
@@ -668,63 +716,202 @@
           var so2 = sources[tp.target];
           var sd = Math.sqrt((so2.x - tp.x) * (so2.x - tp.x) + (so2.y - tp.y) * (so2.y - tp.y));
           near = sd < Math.min(W, H) * 0.22 ? 2.2 : 1;
-          if (sd < 18) {                       /* perfused: relocate the site */
+          if (sd < 18) {
             sources[tp.target] = newSource();
             tp.target = pickTarget(tp.x, tp.y);
           }
         }
-        if (tips.length < MAX_TIPS && tp.gen < 4 &&
-            Math.random() < 0.004 * near * adv) {
-          tips.push(newTip(tp.x, tp.y,
-            tp.ang + (Math.random() < 0.5 ? 0.75 : -0.75),
-            Math.max(W_MIN, tp.w * W_DECAY), tp.gen + 1));
-          tp.w = Math.max(W_MIN, tp.w * 0.94);
+
+        /* bifurcation: parent terminates, two daughters continue,
+           calibres set by Murray's law r0^3 = r1^3 + r2^3 */
+        if (tips.length < MAX_TIPS - 1 && tp.gen < 5 &&
+            Math.random() < 0.0035 * near * adv) {
+          var fr = 0.35 + Math.random() * 0.30;
+          var r1 = Math.max(W_MIN, tp.w * Math.cbrt(fr));
+          var r2 = Math.max(W_MIN, tp.w * Math.cbrt(1 - fr));
+          var spread = 0.45 + Math.random() * 0.35;
+          tips.push(newTip(tp.x, tp.y, tp.ang + spread * (r2 / (r1 + r2)) * 2, r1, tp.gen + 1));
+          tips.push(newTip(tp.x, tp.y, tp.ang - spread * (r1 / (r1 + r2)) * 2, r2, tp.gen + 1));
+          tips.splice(i, 1);
+          continue;
         }
 
-        var out = tp.x < -70 || tp.x > W + 70 || tp.y < -70 || tp.y > H + 70;
-        if (tp.age > tp.maxAge || out) tips.splice(i, 1);
+        if (tp.age > tp.maxAge ||
+            tp.x < -70 || tp.x > W + 70 || tp.y < -70 || tp.y > H + 70) {
+          tips.splice(i, 1);
+        }
       }
       while (tips.length < 4) seedTip();
-      while (segs.length > MAX_SEGS * 5) segs.splice(0, 5);   /* regression */
+      while (segs.length > MAX_SEGS * 5) segs.splice(0, 5);      /* regression */
 
       ctx.clearRect(0, 0, W, H);
 
+      /* hypoxic sites */
       for (var s = 0; s < sources.length; s++) {
         var so = sources[s];
         var pulse = 0.5 + 0.5 * Math.sin(t * 0.02 + so.phase);
         var rad = 34 + pulse * 12;
         var g = ctx.createRadialGradient(so.x, so.y, 0, so.x, so.y, rad);
-        g.addColorStop(0, withAlpha(palette.b, 0.14 + pulse * 0.06));
+        g.addColorStop(0, withAlpha(palette.b, 0.13 + pulse * 0.06));
         g.addColorStop(1, withAlpha(palette.b, 0));
         ctx.fillStyle = g;
         ctx.beginPath(); ctx.arc(so.x, so.y, rad, 0, Math.PI * 2); ctx.fill();
       }
 
-      /* vessels, batched by calibre */
-      var widths = [0.7, 1.3, 2.0, 2.8];
+      /* vessels: 8 calibre buckets, each drawn as a soft halo + core so
+         they read as tubes. Bucketing keeps this to a handful of strokes. */
+      var NB = 8, bw = (W_START - W_MIN) / (NB - 1);
       ctx.lineCap = "round";
-      for (var b = 0; b < 4; b++) {
-        ctx.lineWidth = widths[b];
-        ctx.strokeStyle = withAlpha(palette.a, 0.15 + b * 0.05);
-        ctx.beginPath();
-        for (var q = 0; q < segs.length; q += 5) {
-          if (segs[q + 4] !== b) continue;
-          ctx.moveTo(segs[q], segs[q + 1]);
-          ctx.lineTo(segs[q + 2], segs[q + 3]);
+      ctx.lineJoin = "round";
+      for (var pass = 0; pass < 2; pass++) {
+        for (var b = 0; b < NB; b++) {
+          var wpx = W_MIN + b * bw;
+          ctx.lineWidth = pass === 0 ? wpx + 2.2 : wpx;
+          ctx.strokeStyle = withAlpha(palette.a, pass === 0 ? 0.045 : 0.13 + b * 0.022);
+          ctx.beginPath();
+          var drew = false;
+          for (var q = 0; q < segs.length; q += 5) {
+            var bi = Math.max(0, Math.min(NB - 1, Math.round((segs[q + 4] - W_MIN) / bw)));
+            if (bi !== b) continue;
+            ctx.moveTo(segs[q], segs[q + 1]);
+            ctx.lineTo(segs[q + 2], segs[q + 3]);
+            drew = true;
+          }
+          if (drew) ctx.stroke();
         }
-        ctx.stroke();
       }
 
-      /* tip cells (small, so they read as growing fronts not organisms) */
+      /* tip cells */
       for (var k = 0; k < tips.length; k++) {
         var tq = tips[k];
-        var gg = ctx.createRadialGradient(tq.x, tq.y, 0, tq.x, tq.y, 5.5);
-        gg.addColorStop(0, withAlpha(palette.a, 0.32));
+        var gg = ctx.createRadialGradient(tq.x, tq.y, 0, tq.x, tq.y, 5);
+        gg.addColorStop(0, withAlpha(palette.a, 0.3));
         gg.addColorStop(1, withAlpha(palette.a, 0));
         ctx.fillStyle = gg;
-        ctx.beginPath(); ctx.arc(tq.x, tq.y, 5.5, 0, Math.PI * 2); ctx.fill();
-        ctx.fillStyle = withAlpha(palette.a, 0.6);
-        ctx.beginPath(); ctx.arc(tq.x, tq.y, 1.4, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(tq.x, tq.y, 5, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = withAlpha(palette.a, 0.55);
+        ctx.beginPath(); ctx.arc(tq.x, tq.y, 1.3, 0, Math.PI * 2); ctx.fill();
+      }
+    };
+  }
+
+  /* ===================================================================
+     murmuration — flocking starlings
+
+     Reynolds' three rules (separation, alignment, cohesion) over a
+     spatial hash, plus a slowly wandering roost the flock orbits and
+     an occasional raptor that cuts through. The order parameter of the
+     flock (mean unit velocity, as in the Vicsek model) sits around
+     0.9 and drops sharply when the raptor passes -- which is exactly
+     the splitting and re-forming that makes a murmuration legible.
+     =================================================================== */
+  function initMurmuration() {
+    var birds = [], predator = null;
+    var SEP = 19, ALI = 46, COH = 90, MAXV = 2.1, MINV = 1.0;
+    var CELL = 70, gw = 1, gh = 1;
+
+    function reset() {
+      var n = Math.max(90, Math.min(280, Math.round((W * H) / 4400)));
+      birds = [];
+      for (var i = 0; i < n; i++) {
+        birds.push({
+          x: Math.random() * W, y: Math.random() * H,
+          vx: (Math.random() - 0.5) * 2, vy: (Math.random() - 0.5) * 2,
+        });
+      }
+      gw = Math.ceil(W / CELL) + 3;
+      gh = Math.ceil(H / CELL) + 3;
+      predator = { x: -200, y: H / 2, vx: 2.2, vy: 0, active: false };
+    }
+    reset();
+    onResize = reset;
+
+    step = function (dt) {
+      var adv = dt * speed;
+
+      var ax = W / 2 + Math.cos(t * 0.0035) * W * 0.30;
+      var ay = H / 2 + Math.sin(t * 0.0027) * H * 0.26;
+
+      if (!predator.active && Math.random() < 0.0012 * adv) {
+        predator.active = true;
+        predator.x = -60; predator.y = Math.random() * H;
+        var pa = (Math.random() - 0.5) * 0.6;
+        predator.vx = Math.cos(pa) * 2.2; predator.vy = Math.sin(pa) * 2.2;
+      }
+      if (predator.active) {
+        predator.x += predator.vx * adv;
+        predator.y += predator.vy * adv;
+        if (predator.x > W + 80) predator.active = false;
+      }
+
+      var grid = new Map(), i, k;
+      for (i = 0; i < birds.length; i++) {
+        k = (Math.floor(birds[i].y / CELL) + 1) * gw + Math.floor(birds[i].x / CELL) + 1;
+        var cellArr = grid.get(k);
+        if (!cellArr) { cellArr = []; grid.set(k, cellArr); }
+        cellArr.push(i);
+      }
+
+      for (i = 0; i < birds.length; i++) {
+        var p = birds[i];
+        var sx = 0, sy = 0, avx = 0, avy = 0, cx = 0, cy = 0, na = 0, nc = 0;
+        var gx = Math.floor(p.x / CELL) + 1, gy = Math.floor(p.y / CELL) + 1;
+        for (var oy = -1; oy <= 1; oy++) {
+          for (var ox = -1; ox <= 1; ox++) {
+            var arr = grid.get((gy + oy) * gw + (gx + ox));
+            if (!arr) continue;
+            for (var a = 0; a < arr.length; a++) {
+              var j = arr[a];
+              if (j === i) continue;
+              var q = birds[j];
+              var dx = q.x - p.x, dy = q.y - p.y, d2 = dx * dx + dy * dy;
+              if (d2 < SEP * SEP) { sx -= dx; sy -= dy; }
+              if (d2 < ALI * ALI) { avx += q.vx; avy += q.vy; na++; }
+              if (d2 < COH * COH) { cx += q.x; cy += q.y; nc++; }
+            }
+          }
+        }
+        p.vx += sx * 0.048; p.vy += sy * 0.048;
+        if (na) { p.vx += (avx / na - p.vx) * 0.050; p.vy += (avy / na - p.vy) * 0.050; }
+        if (nc) { p.vx += (cx / nc - p.x) * 0.00038; p.vy += (cy / nc - p.y) * 0.00038; }
+        p.vx += (ax - p.x) * 0.00022; p.vy += (ay - p.y) * 0.00022;
+
+        if (predator.active) {
+          var pdx = p.x - predator.x, pdy = p.y - predator.y;
+          var pd2 = pdx * pdx + pdy * pdy;
+          if (pd2 < 14400) {
+            var pd = Math.sqrt(pd2) || 1;
+            p.vx += (pdx / pd) * 0.9; p.vy += (pdy / pd) * 0.9;
+          }
+        }
+        p.vx += (Math.random() - 0.5) * 0.22;
+        p.vy += (Math.random() - 0.5) * 0.22;
+
+        var spd = Math.sqrt(p.vx * p.vx + p.vy * p.vy);
+        if (spd > MAXV) { p.vx = p.vx / spd * MAXV; p.vy = p.vy / spd * MAXV; }
+        else if (spd < MINV && spd > 0) { p.vx = p.vx / spd * MINV; p.vy = p.vy / spd * MINV; }
+        p.x += p.vx * adv; p.y += p.vy * adv;
+      }
+
+      ctx.clearRect(0, 0, W, H);
+      for (i = 0; i < birds.length; i++) {
+        var bd = birds[i];
+        var sp2 = Math.sqrt(bd.vx * bd.vx + bd.vy * bd.vy) || 1;
+        var ux = bd.vx / sp2, uy = bd.vy / sp2;
+        var L = 4.2, Wd = 1.5;
+        ctx.fillStyle = withAlpha(i % 9 === 0 ? palette.a : palette.text, 0.42);
+        ctx.beginPath();
+        ctx.moveTo(bd.x + ux * L, bd.y + uy * L);
+        ctx.lineTo(bd.x - ux * L * 0.5 - uy * Wd, bd.y - uy * L * 0.5 + ux * Wd);
+        ctx.lineTo(bd.x - ux * L * 0.5 + uy * Wd, bd.y - uy * L * 0.5 - ux * Wd);
+        ctx.closePath();
+        ctx.fill();
+      }
+      if (predator.active) {
+        ctx.fillStyle = withAlpha(palette.b, 0.5);
+        ctx.beginPath();
+        ctx.arc(predator.x, predator.y, 3.2, 0, Math.PI * 2);
+        ctx.fill();
       }
     };
   }
@@ -791,6 +978,7 @@
     phase: initPhase,
     growth: initGrowth,
     angio: initAngio,
+    murmuration: initMurmuration,
     signal: initSignal,
   };
   if (!scenes[sceneName]) return;
