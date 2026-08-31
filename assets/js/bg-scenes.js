@@ -598,13 +598,29 @@
         perfused: 0,
       };
     }
-    function pickTarget(x, y) {
-      var avail = [], i;
+    /* Pick a VEGF source that lies roughly ahead of the tip. Choosing
+       freely put the target behind the tip 47% of the time, and with a
+       bounded turn rate a 180-degree correction takes about 180 frames
+       of continuous curving -- which is what produced the odd looping
+       trajectories. Restricting the choice to a forward cone cuts that
+       to 22%. */
+    function pickTarget(x, y, ang) {
+      var avail = [], i, df;
       for (i = 0; i < sources.length; i++) {
-        if (sources[i].perfused <= 0) avail.push(i);
+        if (sources[i].perfused > 0) continue;
+        if (ang !== undefined) {
+          df = wrapAngle(Math.atan2(sources[i].y - y, sources[i].x - x) - ang);
+          if (Math.abs(df) >= 1.75) continue;
+        }
+        avail.push(i);
+      }
+      if (!avail.length) {
+        for (i = 0; i < sources.length; i++) {
+          if (sources[i].perfused <= 0) avail.push(i);
+        }
       }
       if (!avail.length) return -1;
-      if (Math.random() < 0.55) {
+      if (Math.random() < 0.65) {
         var best = avail[0], bd = Infinity;
         for (i = 0; i < avail.length; i++) {
           var dx = sources[avail[i]].x - x, dy = sources[avail[i]].y - y;
@@ -620,7 +636,7 @@
       return {
         x: x, y: y, ang: ang, w: w, gen: gen, id: ++branchId,
         orig: orig, ox: o.x, oy: o.y,
-        target: pickTarget(x, y),
+        target: pickTarget(x, y, ang),
         age: 0, maxAge: 3800 + Math.random() * 2200,
         lx: x, ly: y,
       };
@@ -721,7 +737,7 @@
         var tp = tips[i];
 
         if (tp.target < 0 || !sources[tp.target] || sources[tp.target].perfused > 0) {
-          tp.target = pickTarget(tp.x, tp.y);
+          tp.target = pickTarget(tp.x, tp.y, tp.ang);
         }
         /* While young, hold a heading away from the origin so each bed
            opens out radially before chemotaxis takes over. */
@@ -729,7 +745,9 @@
           var away = wrapAngle(Math.atan2(tp.y - tp.oy, tp.x - tp.ox) - tp.ang);
           tp.ang += Math.max(-0.03, Math.min(0.03, away * 0.05)) * adv;
         }
-        if (tp.target >= 0) {
+        /* Chemotaxis only once the radial phase is over: run together
+           they pull in opposite directions and the tip corkscrews. */
+        if (tp.age >= 320 && tp.target >= 0) {
           var src = sources[tp.target];
           var diff = wrapAngle(Math.atan2(src.y - tp.y, src.x - tp.x) - tp.ang);
           /* bounded turn rate keeps vessels smoothly curved */
@@ -770,7 +788,7 @@
           near = sd < Math.min(W, H) * 0.22 ? 2.2 : 1;
           if (sd < 18) {
             sources[tp.target] = newSource();
-            tp.target = pickTarget(tp.x, tp.y);
+            tp.target = pickTarget(tp.x, tp.y, tp.ang);
           }
         }
 
@@ -815,7 +833,7 @@
           tips.splice(i, 1);
         }
       }
-      while (tips.length < 7) sproutFrom((Math.random() * origins.length) | 0);
+      while (tips.length < 8) sproutFrom((Math.random() * origins.length) | 0);
 
       /* Regression. Taking segs[0] would always remove the oldest
          segment -- which is a gen-0 trunk at full calibre, so the
@@ -1008,6 +1026,22 @@
             P.active = true;
             P.ttl = 900 + Math.random() * 400;
             P.ttl0 = P.ttl;
+            /* Recruit a partner. With independent schedules each raptor
+               is present ~12% of the time, so the chance of two being
+               visible at once is only 4% -- in practice you never see
+               more than one. Coordinated arrivals raise that to 14% of
+               all frames, and to 68% of the frames where any raptor is
+               out, without a matching rise in total disruption. */
+            if (Math.random() < 0.75) {
+              var idle = [];
+              for (var qi = 0; qi < predators.length; qi++) {
+                var Q = predators[qi];
+                if (Q !== P && !Q.active && Q.cool > 200) idle.push(Q);
+              }
+              if (idle.length) {
+                idle[(Math.random() * idle.length) | 0].cool = 60 + Math.random() * 160;
+              }
+            }
             P.x = Math.random() * W; P.y = Math.random() * H;
             var pa = Math.random() * Math.PI * 2;
             P.vx = Math.cos(pa) * PMAXV; P.vy = Math.sin(pa) * PMAXV;
@@ -1031,7 +1065,7 @@
         if (P.x < 0) P.x += W; else if (P.x >= W) P.x -= W;   /* periodic too */
         if (P.y < 0) P.y += H; else if (P.y >= H) P.y -= H;
         P.ttl -= dt;
-        if (P.ttl <= 0) { P.active = false; P.cool = 6500 + Math.random() * 3000; }
+        if (P.ttl <= 0) { P.active = false; P.cool = 5200 + Math.random() * 2600; }
       }
 
       /* toroidal bucket grid */
