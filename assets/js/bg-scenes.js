@@ -584,7 +584,7 @@
          stroke so they read as tubes rather than hairlines.
      =================================================================== */
   function initAngio() {
-    var sources = [], tips = [], segs = [];
+    var origins = [], sources = [], tips = [], segs = [];
     var MAX_TIPS = 20, MAX_SEGS = 7000, SEG_MIN = 2.6;
     var W_START = 3.2, W_MIN = 0.5;
     var CELL = 26, ANAST_R = 11, INHIBIT = 26, TARGET_TIPS = 9;
@@ -615,21 +615,38 @@
       }
       return avail[(Math.random() * avail.length) | 0];
     }
-    function newTip(x, y, ang, w, gen) {
+    function newTip(x, y, ang, w, gen, orig) {
+      var o = origins[orig];
       return {
         x: x, y: y, ang: ang, w: w, gen: gen, id: ++branchId,
+        orig: orig, ox: o.x, oy: o.y,
         target: pickTarget(x, y),
-        age: 0, maxAge: 2400 + Math.random() * 1800,
+        age: 0, maxAge: 3800 + Math.random() * 2200,
         lx: x, ly: y,
       };
     }
-    function seedTip() {
-      var edge = (Math.random() * 4) | 0, x, y, ang;
-      if (edge === 0)      { x = Math.random() * W; y = -8;    ang =  Math.PI / 2; }
-      else if (edge === 1) { x = W + 8; y = Math.random() * H; ang =  Math.PI; }
-      else if (edge === 2) { x = Math.random() * W; y = H + 8; ang = -Math.PI / 2; }
-      else                 { x = -8;    y = Math.random() * H; ang =  0; }
-      tips.push(newTip(x, y, ang, W_START, 0));
+    /* Origins stand in for pre-existing parent vessels. They are laid
+       out on a jittered grid rather than sampled freely, because free
+       sampling with a minimum-separation test kept clustering them near
+       the middle and the beds never met. */
+    function placeOrigins(n) {
+      var cols = Math.ceil(Math.sqrt(n * W / H));
+      var rows = Math.ceil(n / cols), out = [];
+      for (var r = 0; r < rows; r++) {
+        for (var c = 0; c < cols; c++) {
+          if (out.length >= n) break;
+          out.push({
+            x: ((c + 0.5) / cols) * W + (Math.random() - 0.5) * (W / cols) * 0.42,
+            y: ((r + 0.5) / rows) * H + (Math.random() - 0.5) * (H / rows) * 0.42,
+          });
+        }
+      }
+      return out;
+    }
+    function sproutFrom(oi, ang) {
+      var o = origins[oi];
+      tips.push(newTip(o.x, o.y,
+        ang === undefined ? Math.random() * Math.PI * 2 : ang, W_START, 0, oi));
     }
 
     /* spatial hash of vessel points, for anastomosis lookups */
@@ -676,9 +693,15 @@
 
     function reset() {
       sources = []; tips = []; segs = []; pts = new Map(); frames = 0;
+      var no = Math.max(3, Math.min(6, Math.round((W * H) / 260000)));
+      origins = placeOrigins(no);
       var ns = Math.max(4, Math.min(8, Math.round(W / 300)));
       for (var i = 0; i < ns; i++) sources.push(newSource());
-      for (var j = 0; j < 4; j++) seedTip();
+      for (var o = 0; o < origins.length; o++) {
+        for (var k = 0; k < 3; k++) {
+          sproutFrom(o, (k / 3) * Math.PI * 2 + Math.random() * 0.6);
+        }
+      }
     }
     reset();
     onResize = reset;
@@ -700,6 +723,12 @@
         if (tp.target < 0 || !sources[tp.target] || sources[tp.target].perfused > 0) {
           tp.target = pickTarget(tp.x, tp.y);
         }
+        /* While young, hold a heading away from the origin so each bed
+           opens out radially before chemotaxis takes over. */
+        if (tp.age < 320) {
+          var away = wrapAngle(Math.atan2(tp.y - tp.oy, tp.x - tp.ox) - tp.ang);
+          tp.ang += Math.max(-0.03, Math.min(0.03, away * 0.05)) * adv;
+        }
         if (tp.target >= 0) {
           var src = sources[tp.target];
           var diff = wrapAngle(Math.atan2(src.y - tp.y, src.x - tp.x) - tp.ang);
@@ -719,8 +748,15 @@
           addPt(tp.x, tp.y, tp.id);
           tp.lx = tp.x; tp.ly = tp.y;
 
+          /* A tip may only fuse once it has genuinely left its own hub.
+             Without this it fuses immediately with the tangle around its
+             origin, every new sprout dies within seconds, and the bed
+             collapses back onto the origins (measured screen fill fell
+             from 41% to 13% over two minutes). */
           var hit = findAnastomosis(tp.x, tp.y, tp.id);
-          if (hit && tp.age > 60) {                 /* fuse -> closes a loop */
+          var farFromHub = Math.sqrt((tp.x - tp.ox) * (tp.x - tp.ox) +
+                                     (tp.y - tp.oy) * (tp.y - tp.oy)) > 140;
+          if (hit && tp.age > 260 && farFromHub) {  /* fuse -> closes a loop */
             segs.push(tp.x, tp.y, hit.x, hit.y, tp.w);
             tips.splice(i, 1);
             continue;
@@ -768,8 +804,8 @@
           var c2 = (r0q + Math.pow(r2, 4) - Math.pow(r1, 4)) / (2 * r0s * r2 * r2);
           var th1 = Math.acos(Math.max(-1, Math.min(1, c1)));
           var th2 = Math.acos(Math.max(-1, Math.min(1, c2)));
-          tips.push(newTip(tp.x, tp.y, tp.ang + th1, r1, tp.gen + 1));
-          tips.push(newTip(tp.x, tp.y, tp.ang - th2, r2, tp.gen + 1));
+          tips.push(newTip(tp.x, tp.y, tp.ang + th1, r1, tp.gen + 1, tp.orig));
+          tips.push(newTip(tp.x, tp.y, tp.ang - th2, r2, tp.gen + 1, tp.orig));
           tips.splice(i, 1);
           continue;
         }
@@ -779,7 +815,7 @@
           tips.splice(i, 1);
         }
       }
-      while (tips.length < 7) seedTip();
+      while (tips.length < 7) sproutFrom((Math.random() * origins.length) | 0);
 
       /* Regression. Taking segs[0] would always remove the oldest
          segment -- which is a gen-0 trunk at full calibre, so the
@@ -848,6 +884,15 @@
             if (drew) ctx.stroke();
           }
         }
+      }
+
+      /* origins: the parent vessels each bed sprouts from */
+      for (var oi = 0; oi < origins.length; oi++) {
+        ctx.strokeStyle = withAlpha(palette.a, 0.16);
+        ctx.lineWidth = 1.2;
+        ctx.beginPath();
+        ctx.arc(origins[oi].x, origins[oi].y, 5.5, 0, Math.PI * 2);
+        ctx.stroke();
       }
 
       /* tip cells */
