@@ -5,14 +5,21 @@
 <!-- Support for Academicons -->
 <link rel="stylesheet" href="{{ base_path }}/assets/css/academicons.css"/>
 
-<!-- favicon from https://commons.wikimedia.org/wiki/File:OOjs_UI_icon_academic-progressive.svg -->
-<link rel="apple-touch-icon" sizes="180x180" href="{{ base_path }}/images/apple-touch-icon-180x180.png"/>
+<!-- Marca personal: célula / circuito.
+     Solo se declara el SVG: los PNG y el .ico de la carpeta images/ todavía
+     son los genéricos de academicpages, y al declararlos el navegador
+     terminaba eligiendo el .ico viejo en lugar de este SVG.
+     Cuando subas los PNG y el .ico nuevos, descomenta las cuatro líneas
+     de abajo para dar cobertura a navegadores antiguos y a iOS. -->
 <link rel="icon" type="image/svg+xml" href="{{ base_path }}/images/favicon.svg"/>
+<!--
+<link rel="apple-touch-icon" sizes="180x180" href="{{ base_path }}/images/apple-touch-icon-180x180.png"/>
 <link rel="icon" type="image/png" href="{{ base_path }}/images/favicon-32x32.png" sizes="32x32"/>
 <link rel="icon" type="image/png" href="{{ base_path }}/images/favicon-192x192.png" sizes="192x192"/>
+<link rel="icon" href="{{ base_path }}/images/favicon.ico"/>
+-->
 <link rel="manifest" href="{{ base_path }}/images/manifest.json"/>
-<link rel="icon" href="/images/favicon.ico"/>
-<meta name="theme-color" content="#ffffff"/>
+<meta name="theme-color" content="#0a1c2f"/>
 
 <!-- =====================================================================
      Home-style treatment for all content pages (Talks, Teaching,
