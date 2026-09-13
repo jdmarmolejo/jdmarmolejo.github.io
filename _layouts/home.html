@@ -376,14 +376,6 @@ layout: default
 
   /* group card: same look, plus a "stacked" hint that it opens into more */
   button.rcard { appearance: none; -webkit-appearance: none; font: inherit; text-align: left; width: 100%; cursor: pointer; }
-  .rcard--group { position: relative; }
-  .rcard--group::before {
-    content: ""; position: absolute; inset: 0; z-index: -1; border-radius: 14px;
-    background: color-mix(in srgb, var(--global-text-color) 4%, transparent);
-    border: 1px solid color-mix(in srgb, var(--global-text-color) 12%, transparent);
-    transform: translate(7px, 7px); transition: transform 0.2s ease;
-  }
-  .rcard--group:hover::before { transform: translate(10px, 10px); }
   .rcard--group .rcard__count { color: var(--accentB); }
 
   /* group sub-panel */
