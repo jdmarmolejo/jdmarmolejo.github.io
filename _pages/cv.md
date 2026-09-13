@@ -116,96 +116,10 @@ redirect_from:
       </ol>
     {% endif %}
   {% endfor %}
-
-  <h3>Books</h3>
-  <ol class="cv-list cv-list--citations">
-    <li>
-      Marmolejo Lozano, J.D. <i>Las Crónicas de Ederneit: La travesía de la perla</i>. Fantasy novel,
-      published at age 14. Held in university libraries in Colombia and the United States; led to
-      interviews on international television, including CNN.
-      <a class="cv-list__link" href="https://uniandes.primo.exlibrisgroup.com/permalink/57U_UDLA/1g0omtq/alma991004108009707681">[library record]</a>
-    </li>
-  </ol>
 </div>
 
 <div class="cv-section">
   <h2>Experience</h2>
-
-  <h3>Other research projects</h3>
-  <ul class="cv-list cv-list--plain">
-    <li>
-      <strong>Growth Rate Influence on Quorum Sensing: From Dynamics to Antibiotic Responses</strong>
-      — Advisor: Juan Manuel Pedraza Leal, PhD. January 2022 – July 2024
-      <ul class="cv-list cv-list--plain cv-list--nested">
-        <li>
-          Developed a phenomenological model of how periodic sub-MIC antibiotic concentrations affect
-          bacterial growth and gene expression at the single-cell level. Using ODE modelling and
-          stochastic simulations, I showed theoretically that inhibiting growth could suppress the
-          quorum-sensing network, suggesting Quorum Quencher drugs may be unnecessary. This was my
-          master's thesis in Computational Biology.
-          <a class="cv-list__link" href="https://repositorio.uniandes.edu.co/server/api/core/bitstreams/d24da508-7b2f-46b4-911a-c1982675d4e5/content">[thesis]</a>
-        </li>
-      </ul>
-    </li>
-    <li>
-      <strong>Analysis of Noise Propagation in Feedback-regulated Genetic Networks</strong>
-      — Advisor: Juan Manuel Pedraza Leal, PhD. August–December 2021
-      <ul class="cv-list cv-list--plain cv-list--nested">
-        <li>
-          Studied local noise and its propagation in a transcriptional circuit of two mutually
-          feedback-coupled genes, and explored how specific feedback configurations affect circuit
-          output dynamics, combining analytical work with Gillespie-algorithm simulations. This was
-          my undergraduate thesis in Physics.
-          <a class="cv-list__link" href="https://repositorio.uniandes.edu.co/entities/publication/c2947936-0fec-48e8-9e6c-5a592e138300">[thesis, in Spanish]</a>
-        </li>
-      </ul>
-    </li>
-    <li>
-      <strong>Exploratory study on <em>E. coli</em> viability in culture media with hydrocarbons</strong>
-      — Advisor: Juan Manuel Pedraza Leal, PhD. August–December 2021
-      <ul class="cv-list cv-list--plain cv-list--nested">
-        <li>
-          Conducted a statistical assessment of <em>E. coli</em> survival in diesel-containing culture
-          media, to determine whether directed-evolution experiments were needed for the laboratory
-          production of hydrocarbons chemically identical to diesel through synthetic biology.
-        </li>
-      </ul>
-    </li>
-    <li>
-      <strong>Molecular dynamics simulation of simplified <em>S. aureus</em> membrane models</strong>
-      — Advisor: Chad Leidy, PhD. January–June 2021
-      <ul class="cv-list cv-list--plain cv-list--nested">
-        <li>
-          Used molecular dynamics to simulate biophysical properties — lipid area, membrane thickness,
-          lateral diffusion — to assess how cardiolipin affects these properties in the <em>S. aureus</em>
-          membrane, in relation to antibiotic mechanisms.
-        </li>
-      </ul>
-    </li>
-    <li>
-      <strong>Simulating the Impact of Cell Division on Gene Expression</strong>
-      — Advisor: Juan Manuel Pedraza Leal, PhD. January–June 2021
-      <ul class="cv-list cv-list--plain cv-list--nested">
-        <li>
-          Studied how noise from cell division propagates into fluctuations in the expression of a
-          constitutive gene, simulating growth, division and gene expression with Gillespie's
-          algorithm and the PyEcoLib library.
-        </li>
-      </ul>
-    </li>
-    <li>
-      <strong>CRISPOXYLUM: Gene Silencing in the Cocaine Metabolic Pathway of <em>Erythroxylum coca</em> Using CRISPR-Cas9</strong>
-      — Advisor: Juan Manuel Pedraza Leal, PhD. January–July 2020
-      <ul class="cv-list cv-list--plain cv-list--nested">
-        <li>
-          Designed a biological system to silence genes in the cocaine metabolic pathway of
-          <em>Erythroxylum coca</em>, developed a deterministic model of the system, and examined the
-          stochastic behaviour of the transcriptional network using Gillespie's algorithm.
-        </li>
-      </ul>
-    </li>
-  </ul>
-
   <h3>Work experience</h3>
   <ul class="cv-list cv-list--plain">
     <li>
