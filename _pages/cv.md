@@ -21,11 +21,11 @@ redirect_from:
 <div class="cv-intro">
   <p>
     I am a physicist with a master's in Computational Biology, and currently a PhD student in
-    Applied Mathematics. Most of my work is focused in mathematical, theoretical and systems 
-    biology. My skills span mathematical modelling and simulation of complex systems together
-    with a solid grounding in molecular biology. I am especially interested in
-    genetic network dynamics, stochasticity in gene expression, mathematical models of cell biology,
-    synthetic biology, physiology and pharmacodynamics/pharmacokinetics.
+    Mathematical Biology. I work in mathematical, theoretical and systems biology, centred on
+    modelling gene expression. My skills span mathematical modelling and simulation of complex
+    systems together with a solid grounding in molecular biology. I am especially interested in
+    genetic network dynamics, stochasticity in gene expression, synthetic biology, and
+    pharmacodynamics/pharmacokinetics.
   </p>
   <p class="cv-intro__contact">
     <i class="fa fa-envelope" aria-hidden="true"></i> {{ site.author.email }}
@@ -34,6 +34,7 @@ redirect_from:
     <button type="button" class="cv-download-btn" onclick="window.print()">
       <i class="fa fa-download" aria-hidden="true"></i> Download as PDF
     </button>
+    <span class="cv-actions__hint">Opens your browser's print dialog — choose "Save as PDF" as the destination.</span>
   </div>
 </div>
 
@@ -326,21 +327,18 @@ redirect_from:
   .cv-list__link:hover { opacity: 1; }
 
   /* ---------- print / PDF export ----------
-     window.print() is the only way a static Jekyll/GitHub Pages site can
-     turn its own live content into a PDF without a server -- so this
-     stylesheet does the actual design work; nothing here is "just hiding
-     stuff", it rebuilds the page into a proper document. */
+     The shared reset (hiding the masthead/footer/sidebar, killing
+     backdrop-filter and the fixed background, etc.) now lives in the
+     site-wide stylesheet in _includes/head/custom.html, since it turned
+     out to affect every page's print performance, not just this one.
+     Only CV-specific overrides remain here. */
   @media print {
-    body { background: #fff !important; color: #1a1a1a !important; }
-    .masthead, .page__footer, .sidebar, .cv-actions, .bg-scene { display: none !important; }
-    #main { max-width: 100% !important; padding: 0 !important; }
-    .page__title { display: none !important; }
-
     .cv-title { display: block !important; }
+    .cv-actions { display: none !important; }
+    .page__title { display: none !important; }
 
     .cv-section h2 { color: var(--global-base-color) !important; border-bottom-color: var(--global-base-color) !important; }
     .cv-entry__date, .cv-skill__level, .cv-title__tagline { color: var(--global-base-color) !important; }
-    a { color: #1a1a1a !important; text-decoration: underline; }
     .cv-list__link { display: none; } /* URLs don't help on a printed page */
 
     .cv-section, .cv-entry, .cv-list > li { break-inside: avoid; }
