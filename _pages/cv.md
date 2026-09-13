@@ -9,6 +9,15 @@ redirect_from:
 
 {% include base_path %}
 
+<!-- Shown only in the printed / PDF version: the theme's own name heading
+     lives in the sidebar, which the print stylesheet hides, so the
+     document needs its own title here -- the equivalent of moderncv's
+     \makecvtitle. -->
+<div class="cv-title">
+  <h1 class="cv-title__name">{{ site.author.name }}</h1>
+  <p class="cv-title__tagline">Mathematical &amp; Computational Biology</p>
+</div>
+
 <div class="cv-intro">
   <p>
     I am a physicist with a master's in Computational Biology, and currently a PhD student in
@@ -33,23 +42,32 @@ redirect_from:
   <h2>Education</h2>
 
   <h3>Academic background</h3>
-  <ul class="cv-list cv-list--plain">
-    <li>
-      <strong>PhD in Biological Sciences</strong> (in progress) — University of Edinburgh, Edinburgh, Scotland, 2024–
-    </li>
-    <li>
-      <strong>MSc in Computational Biology</strong> — Universidad de los Andes, Bogotá, Colombia, 2022–2024
-      <ul class="cv-list cv-list--plain cv-list--nested">
-        <li><em>Growth Rate Influence on Quorum Sensing: From Dynamics to Antibiotic Responses</em></li>
-      </ul>
-    </li>
-    <li>
-      <strong>BSc in Physics</strong> — Universidad de los Andes, Bogotá, Colombia, 2016–2022
-      <ul class="cv-list cv-list--plain cv-list--nested">
-        <li><em>Analysis of Noise Propagation in Feedback-regulated Genetic Networks</em></li>
-      </ul>
-    </li>
-  </ul>
+
+  <div class="cv-entry">
+    <div class="cv-entry__date">2024–</div>
+    <div class="cv-entry__body">
+      <div class="cv-entry__title">PhD in Biological Sciences <span class="cv-entry__status">(in progress)</span></div>
+      <div class="cv-entry__sub">University of Edinburgh — Edinburgh, Scotland</div>
+    </div>
+  </div>
+
+  <div class="cv-entry">
+    <div class="cv-entry__date">2022–2024</div>
+    <div class="cv-entry__body">
+      <div class="cv-entry__title">MSc in Computational Biology</div>
+      <div class="cv-entry__sub">Universidad de los Andes — Bogotá, Colombia</div>
+      <div class="cv-entry__detail"><em>Growth Rate Influence on Quorum Sensing: From Dynamics to Antibiotic Responses</em></div>
+    </div>
+  </div>
+
+  <div class="cv-entry">
+    <div class="cv-entry__date">2016–2022</div>
+    <div class="cv-entry__body">
+      <div class="cv-entry__title">BSc in Physics</div>
+      <div class="cv-entry__sub">Universidad de los Andes — Bogotá, Colombia</div>
+      <div class="cv-entry__detail"><em>Analysis of Noise Propagation in Feedback-regulated Genetic Networks</em></div>
+    </div>
+  </div>
 
   <h3>Supplementary education</h3>
   <ul class="cv-list cv-list--plain">
@@ -100,20 +118,22 @@ redirect_from:
 
 <div class="cv-section">
   <h2>Publications</h2>
-
   <h3>Scientific articles</h3>
   {% for category in site.publication_category %}
     {% assign catpubs = site.publications | where: "category", category[0] | sort: "date" | reverse %}
     {% if catpubs.size > 0 %}
       <h4 class="cv-subheading">{{ category[1].title }}</h4>
-      <ol class="cv-list cv-list--citations">
-        {% for post in catpubs %}
-          <li>
-            {{ post.citation }}
-            <a class="cv-list__link" href="{{ base_path }}{{ post.url }}">[details]</a>
-          </li>
-        {% endfor %}
-      </ol>
+      {% for post in catpubs %}
+        <div class="cv-entry">
+          <div class="cv-entry__date">{{ post.date | date: "%Y" }}</div>
+          <div class="cv-entry__body">
+            <div class="cv-entry__detail">
+              {{ post.citation }}
+              <a class="cv-list__link" href="{{ base_path }}{{ post.url }}">[details]</a>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
     {% endif %}
   {% endfor %}
 </div>
@@ -121,68 +141,85 @@ redirect_from:
 <div class="cv-section">
   <h2>Experience</h2>
   <h3>Work experience</h3>
-  <ul class="cv-list cv-list--plain">
-    <li>
-      <strong>Teaching Assistant</strong>, Physics Department — University of Edinburgh, Edinburgh, Scotland, January–April 2025
-      <ul class="cv-list cv-list--plain cv-list--nested">
-        <li>Demonstrated Experimental Physics 2 to second-year physics students, grading laboratory reports and assisting with experiments.</li>
-      </ul>
-    </li>
-    <li>
-      <strong>Research Assistant</strong>, Biological Sciences Department — Universidad de los Andes, Bogotá, Colombia, August 2022–June 2024
-      <ul class="cv-list cv-list--plain cv-list--nested">
-        <li>Finalised research from my undergraduate studies on noise propagation in transcriptional genetic cascades, then moved on to studying how cell growth rate affects the stochastic dynamics of gene expression in bacteria.</li>
-      </ul>
-    </li>
-    <li>
-      <strong>Teaching Assistant</strong>, Physics Department — Universidad de los Andes, Bogotá, Colombia, January–December 2023
-      <ul class="cv-list cv-list--plain cv-list--nested">
-        <li>Taught Experimental Physics 1 to first-year science and engineering students: delivering the course, grading laboratory reports, designing assessments, and assisting with experiments.</li>
-      </ul>
-    </li>
-  </ul>
+
+  <div class="cv-entry">
+    <div class="cv-entry__date">2025</div>
+    <div class="cv-entry__body">
+      <div class="cv-entry__title">Teaching Assistant</div>
+      <div class="cv-entry__sub">Physics Department, University of Edinburgh — Edinburgh, Scotland</div>
+      <div class="cv-entry__detail">Demonstrated Experimental Physics 2 to second-year physics students, grading laboratory reports and assisting with experiments.</div>
+    </div>
+  </div>
+
+  <div class="cv-entry">
+    <div class="cv-entry__date">2022–2024</div>
+    <div class="cv-entry__body">
+      <div class="cv-entry__title">Research Assistant</div>
+      <div class="cv-entry__sub">Biological Sciences Department, Universidad de los Andes — Bogotá, Colombia</div>
+      <div class="cv-entry__detail">Finalised research from my undergraduate studies on noise propagation in transcriptional genetic cascades, then moved on to studying how cell growth rate affects the stochastic dynamics of gene expression in bacteria.</div>
+    </div>
+  </div>
+
+  <div class="cv-entry">
+    <div class="cv-entry__date">2023</div>
+    <div class="cv-entry__body">
+      <div class="cv-entry__title">Teaching Assistant</div>
+      <div class="cv-entry__sub">Physics Department, Universidad de los Andes — Bogotá, Colombia</div>
+      <div class="cv-entry__detail">Taught Experimental Physics 1 to first-year science and engineering students: delivering the course, grading laboratory reports, designing assessments, and assisting with experiments.</div>
+    </div>
+  </div>
 </div>
 
 <div class="cv-section">
   <h2>Teaching</h2>
-  <ol class="cv-list cv-list--citations">
-    {% assign courses = site.teaching | sort: "date" | reverse %}
-    {% for post in courses %}
-      <li>
-        {{ post.title }}{% if post.type %}, {{ post.type }}{% endif %}{% if post.venue %}, {{ post.venue }}{% endif %}{% if post.date %}, {{ post.date | date: "%Y" }}{% endif %}.
-        <a class="cv-list__link" href="{{ base_path }}{{ post.url }}">[details]</a>
-      </li>
-    {% endfor %}
-  </ol>
+  {% assign courses = site.teaching | sort: "date" | reverse %}
+  {% for post in courses %}
+    <div class="cv-entry">
+      <div class="cv-entry__date">{{ post.date | date: "%Y" }}</div>
+      <div class="cv-entry__body">
+        <div class="cv-entry__detail">
+          {{ post.title }}{% if post.type %}, {{ post.type }}{% endif %}{% if post.venue %}, {{ post.venue }}{% endif %}.
+          <a class="cv-list__link" href="{{ base_path }}{{ post.url }}">[details]</a>
+        </div>
+      </div>
+    </div>
+  {% endfor %}
 </div>
 
 <div class="cv-section">
   <h2>Scientific conferences and workshops</h2>
-  <ol class="cv-list cv-list--citations">
-    {% assign talks = site.talks | sort: "date" | reverse %}
-    {% for post in talks %}
-      <li>
-        {{ post.title }}.
-        {% if post.type %}{{ post.type }}{% endif %}{% if post.venue %}, {{ post.venue }}{% endif %}{% if post.location %}, {{ post.location }}{% endif %}{% if post.date %}, {{ post.date | date: "%B %Y" }}{% endif %}.
-        <a class="cv-list__link" href="{{ base_path }}{{ post.url }}">[details]</a>
-      </li>
-    {% endfor %}
-  </ol>
+  {% assign talks = site.talks | sort: "date" | reverse %}
+  {% for post in talks %}
+    <div class="cv-entry">
+      <div class="cv-entry__date">{{ post.date | date: "%b %Y" }}</div>
+      <div class="cv-entry__body">
+        <div class="cv-entry__detail">
+          {{ post.title }}.
+          {% if post.type %}{{ post.type }}{% endif %}{% if post.venue %}, {{ post.venue }}{% endif %}{% if post.location %}, {{ post.location }}{% endif %}.
+          <a class="cv-list__link" href="{{ base_path }}{{ post.url }}">[details]</a>
+        </div>
+      </div>
+    </div>
+  {% endfor %}
 </div>
 
 <style>
-  /* ---------- CV: condensed, print-friendly lists ----------
-     Deliberately NOT using the site's .archive__item card treatment
-     here: a CV is meant to be scanned quickly or exported to PDF, where
-     hover states and heavy visual chrome don't help. */
+  /* ---------- CV title (print-only) ---------- */
+  .cv-title { display: none; }
+  .cv-title__name { font-size: 2rem; font-weight: 800; margin: 0 0 0.15rem 0; letter-spacing: -0.01em; }
+  .cv-title__tagline {
+    margin: 0 0 1.4rem 0;
+    font-size: 0.95rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--global-base-color);
+    font-weight: 700;
+  }
 
   .cv-intro { margin-bottom: 2.2rem; }
   .cv-intro p { line-height: 1.65; }
   .cv-intro__contact { font-size: 0.92rem; opacity: 0.85; }
-  .cv-actions {
-    display: flex; align-items: center; gap: 0.9rem; flex-wrap: wrap;
-    margin-top: 1.1rem;
-  }
+  .cv-actions { display: flex; align-items: center; gap: 0.9rem; flex-wrap: wrap; margin-top: 1.1rem; }
   .cv-download-btn {
     display: inline-flex; align-items: center; gap: 0.5rem;
     background: var(--global-base-color);
@@ -196,32 +233,63 @@ redirect_from:
   .cv-download-btn:hover { transform: translateY(-1px); opacity: 0.92; }
   .cv-actions__hint { font-size: 0.82rem; opacity: 0.65; }
 
-  .cv-section { margin-bottom: 2.4rem; }
+  .cv-section { margin-bottom: 2.3rem; }
   .cv-section h2 {
-    font-size: 1.3rem;
-    font-weight: 700;
-    margin: 0 0 0.9rem 0;
+    font-size: 1.25rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin: 0 0 1rem 0;
     padding-bottom: 0.4rem;
-    border-bottom: 1px solid color-mix(in srgb, var(--global-text-color) 16%, transparent);
+    color: var(--global-base-color);
+    border-bottom: 2px solid var(--global-base-color);
   }
   .cv-section h3 {
-    font-size: 1.02rem;
+    font-size: 0.85rem;
     font-weight: 700;
-    margin: 1.4rem 0 0.6rem 0;
-    color: var(--global-base-color);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin: 1.3rem 0 0.8rem 0;
+    opacity: 0.75;
   }
   .cv-subheading {
-    font-size: 0.9rem;
+    font-size: 0.8rem;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.04em;
-    opacity: 0.7;
-    margin: 1rem 0 0.5rem 0;
+    opacity: 0.6;
+    margin: 0.9rem 0 0.5rem 0;
   }
-  .cv-section__intro {
-    font-size: 0.95rem;
-    opacity: 0.85;
-    margin: -0.3rem 0 1rem 0;
+
+  /* ---------- unified dated-entry component ----------
+     The recognisable "banking"-style moderncv trait: a narrow date
+     column on the left, content on the right. Used for every section
+     that has a date -- Education, Work experience, Publications,
+     Teaching, Talks -- so the whole document reads as one coherent
+     design instead of a mix of bullets and numbered lists. */
+  .cv-entry {
+    display: grid;
+    grid-template-columns: 92px 1fr;
+    column-gap: 1.2rem;
+    margin-bottom: 1.15rem;
+  }
+  .cv-entry__date {
+    text-align: right;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--global-base-color);
+    padding-top: 0.2rem;
+    white-space: nowrap;
+  }
+  .cv-entry__title { font-weight: 700; font-size: 1rem; line-height: 1.35; }
+  .cv-entry__status { font-weight: 400; opacity: 0.7; font-size: 0.9em; }
+  .cv-entry__sub { font-style: italic; opacity: 0.82; font-size: 0.92rem; margin-top: 0.15rem; }
+  .cv-entry__detail { margin-top: 0.35rem; font-size: 0.94rem; line-height: 1.55; }
+  .cv-entry .cv-entry__detail:only-child { margin-top: 0; }
+
+  @media (max-width: 560px) {
+    .cv-entry { grid-template-columns: 1fr; row-gap: 0.15rem; }
+    .cv-entry__date { text-align: left; }
   }
 
   .cv-list { margin: 0; padding-left: 0; list-style: none; }
@@ -239,15 +307,12 @@ redirect_from:
     border-radius: 50%;
     background: var(--global-base-color);
   }
-  .cv-list--nested { margin-top: 0.4rem; margin-bottom: 0.2rem; }
-  .cv-list--nested > li::before { background: var(--global-link-color); }
   .cv-list--columns {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
     column-gap: 1.5rem;
   }
 
-  /* skill proficiency rows */
   .cv-list--skills > li {
     display: flex; align-items: center; justify-content: space-between;
     max-width: 320px;
@@ -258,53 +323,28 @@ redirect_from:
   .cv-skill__name { font-size: 0.95rem; }
   .cv-skill__level { color: var(--global-base-color); letter-spacing: 0.15em; font-size: 0.85rem; }
 
-  /* citations: numbered, hanging indent -- the standard academic-CV look */
-  .cv-list--citations { counter-reset: cv-citation; }
-  .cv-list--citations > li {
-    counter-increment: cv-citation;
-    position: relative;
-    padding-left: 2.1rem;
-    margin-bottom: 0.85rem;
-    line-height: 1.55;
-    font-size: 0.96rem;
-  }
-  .cv-list--citations > li::before {
-    content: counter(cv-citation) ".";
-    position: absolute;
-    left: 0;
-    width: 1.7rem;
-    text-align: right;
-    color: color-mix(in srgb, var(--global-text-color) 60%, transparent);
-    font-variant-numeric: tabular-nums;
-  }
-  .cv-list__link {
-    margin-left: 0.35rem;
-    font-size: 0.85em;
-    opacity: 0.7;
-    white-space: nowrap;
-  }
+  .cv-list__link { margin-left: 0.35rem; font-size: 0.85em; opacity: 0.7; white-space: nowrap; }
   .cv-list__link:hover { opacity: 1; }
 
   /* ---------- print / PDF export ----------
-     The "Download as PDF" button just calls window.print(): a static
-     Jekyll/GitHub Pages site has no server able to render a PDF on
-     demand, so the browser's own print pipeline is what stays
-     automatically in sync with the page's content -- no separate file
-     to regenerate whenever a publication, talk or course is added. */
+     window.print() is the only way a static Jekyll/GitHub Pages site can
+     turn its own live content into a PDF without a server -- so this
+     stylesheet does the actual design work; nothing here is "just hiding
+     stuff", it rebuilds the page into a proper document. */
   @media print {
-    body { background: #fff !important; color: #111 !important; }
+    body { background: #fff !important; color: #1a1a1a !important; }
     .masthead, .page__footer, .sidebar, .cv-actions, .bg-scene { display: none !important; }
     #main { max-width: 100% !important; padding: 0 !important; }
-    .cv-section h2, .cv-section h3 { color: #111 !important; }
-    .cv-section h2 { border-bottom-color: #111 !important; }
-    .cv-list--plain > li::before, .cv-list--nested > li::before { background: #111 !important; }
-    .cv-list--citations > li::before { color: #111 !important; }
-    .cv-skill__level { color: #111 !important; }
-    a { color: #111 !important; text-decoration: underline; }
-    .cv-section, .cv-list > li { break-inside: avoid; }
-  }
+    .page__title { display: none !important; }
 
-  @media (max-width: 600px) {
-    .cv-list--skills > li { max-width: none; }
+    .cv-title { display: block !important; }
+
+    .cv-section h2 { color: var(--global-base-color) !important; border-bottom-color: var(--global-base-color) !important; }
+    .cv-entry__date, .cv-skill__level, .cv-title__tagline { color: var(--global-base-color) !important; }
+    a { color: #1a1a1a !important; text-decoration: underline; }
+    .cv-list__link { display: none; } /* URLs don't help on a printed page */
+
+    .cv-section, .cv-entry, .cv-list > li { break-inside: avoid; }
+    .cv-section h2, .cv-section h3 { break-after: avoid; }
   }
 </style>
