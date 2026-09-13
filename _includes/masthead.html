@@ -8,7 +8,7 @@
           <li class="masthead__menu-item masthead__menu-item--lg persist {% if page.url == '/' or page.url == '/index.html' %}selected{% endif %}">
             <a href="{{ base_path }}/"
                style="display:inline-flex; align-items:center; gap:.55rem;"
-               onclick="if (window.location.pathname === '{{ base_path }}/' || window.location.pathname === '{{ base_path }}/index.html') { window.scrollTo({top: 0, behavior: 'smooth'}); return false; }">
+               onclick="if (window.location.href.split('?')[0].split('#')[0] === '{{ base_path }}/' || window.location.href.split('?')[0].split('#')[0] === '{{ base_path }}/index.html') { window.scrollTo({top: 0, behavior: 'smooth'}); return false; }">
               <img src="{{ base_path }}/images/logo-transparent.svg" alt=""
                    style="height:38px; width:38px; flex-shrink:0; margin:-8px 0;">
               {{ site.title }}
