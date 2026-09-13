@@ -156,18 +156,7 @@ author_profile: true
   }
 
   /* group card: a "stacked" hint that it opens into more */
-  .research-card--group::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    z-index: -1;
-    border-radius: 10px;
-    border: 1px solid rgba(128, 128, 128, 0.25);
-    transform: translate(6px, 6px);
-    transition: transform 0.18s ease;
-  }
-  .research-card--group:hover::before { transform: translate(9px, 9px); }
-  .research-card--group .research-card__count { color: var(--global-link-color); }
+    .research-card--group .research-card__count { color: var(--global-link-color); }
 
   .research-card__image {
     width: 100%;
