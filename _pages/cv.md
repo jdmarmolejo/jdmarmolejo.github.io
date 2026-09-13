@@ -21,11 +21,11 @@ redirect_from:
 <div class="cv-intro">
   <p>
     I am a physicist with a master's in Computational Biology, and currently a PhD student in
-    Mathematical Biology. I work in mathematical, theoretical and systems biology, centred on
-    modelling gene expression. My skills span mathematical modelling and simulation of complex
-    systems together with a solid grounding in molecular biology. I am especially interested in
-    genetic network dynamics, stochasticity in gene expression, synthetic biology, and
-    pharmacodynamics/pharmacokinetics.
+    Applied Mathematics. Most of my work is focused in mathematical, theoretical and systems 
+    biology. My skills span mathematical modelling and simulation of complex systems together
+    with a solid grounding in molecular biology. I am especially interested in
+    genetic network dynamics, stochasticity in gene expression, mathematical models of cell biology,
+    synthetic biology, physiology and pharmacodynamics/pharmacokinetics.
   </p>
   <p class="cv-intro__contact">
     <i class="fa fa-envelope" aria-hidden="true"></i> {{ site.author.email }}
@@ -34,7 +34,6 @@ redirect_from:
     <button type="button" class="cv-download-btn" onclick="window.print()">
       <i class="fa fa-download" aria-hidden="true"></i> Download as PDF
     </button>
-    <span class="cv-actions__hint">Opens your browser's print dialog — choose "Save as PDF" as the destination.</span>
   </div>
 </div>
 
