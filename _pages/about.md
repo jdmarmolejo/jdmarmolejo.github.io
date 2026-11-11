@@ -12,9 +12,8 @@ redirect_from:
 I&rsquo;m a physicist turned computational biologist. I studied **Physics** and
 completed a **Master&rsquo;s in Computational Biology** at the University of Los Andes
 in Bogotá, Colombia, and I&rsquo;m now a **PhD student in Theoretical and Mathematical
-Biology** at the University of Edinburgh, supervised by
-[Prof. Ramon Grima](https://grimagroup.bio.ed.ac.uk/home) and
-[Dr. Nikola Popović](https://webhomes.maths.ed.ac.uk/~npopovic/index.html).
+Biology** at the University of Edinburgh, supervised by [Dr. Nikola Popović](https://webhomes.maths.ed.ac.uk/~npopovic/index.html)
+and [Dr. Rubén Pérez-Carrasco](https://www.perez-carrasco.com/).
 
 My research asks how **mathematical and computational models** can help us
 understand, describe and predict **complex biological systems** — with a focus on
